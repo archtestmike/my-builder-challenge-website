@@ -107,7 +107,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
       shooting.y += shooting.vy;
       shooting.life -= 0.02;
 
-      ctx.save();
       const trail = ctx.createLinearGradient(
         shooting.x, shooting.y,
         shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8
@@ -120,7 +119,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
       ctx.moveTo(shooting.x, shooting.y);
       ctx.lineTo(shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8);
       ctx.stroke();
-      ctx.restore();
 
       if (shooting.life <= 0 || shooting.x < -60 || shooting.y > h + 60) shooting = null;
     }
@@ -132,13 +130,12 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Contact form (Lambda submit) ===== */
 (() => {
-  const LAMBDA_URL = "https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/";
+  // CHANGE if your contact handler URL is different:
+  const CONTACT_LAMBDA_URL = "https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
-
-  const btn = form.querySelector('button[type="submit"]');
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -151,29 +148,26 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
     status.textContent = 'Sending…';
     status.style.opacity = '0.9';
-    btn?.setAttribute('disabled', 'true');
 
     try{
-      const res = await fetch(LAMBDA_URL, {
+      const res = await fetch(CONTACT_LAMBDA_URL, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify(payload),
-        mode: 'cors',
+        mode: 'cors'
       });
       if (!res.ok) throw new Error('Bad response');
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
-      console.warn('[Contact] submit failed', err);
       status.textContent = 'Hmm, something went wrong. Please try again.';
-    }finally{
-      btn?.removeAttribute('disabled');
     }
   });
 })();
 
-/* ===== Visitor Geo Hello (country Lambda) ===== */
+/* ===== Visitor Geo Hello (uses your country Lambda Function URL) ===== */
 (() => {
+  // Your country Function URL:
   const COUNTRY_API = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const chip = document.getElementById('geo-hello');
@@ -183,10 +177,12 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
     return m ? decodeURIComponent(m[1]) : '';
   };
+
   const setCookie = (k, v, days=30) => {
     const exp = new Date(Date.now() + days*864e5).toUTCString();
     document.cookie = `${k}=${encodeURIComponent(v)}; Path=/; Expires=${exp}; SameSite=Lax`;
   };
+
   const flag = (cc) => {
     if (!cc || cc.length !== 2) return '';
     const A = 0x1F1E6, base = 'A'.charCodeAt(0);
@@ -195,29 +191,25 @@ document.getElementById('year').textContent = new Date().getFullYear();
   };
 
   async function resolveCountry(){
+    // 1) cookie first (from prior success or CloudFront)
     let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
     if (cc) return cc;
 
+    // 2) Function URL – no custom headers to avoid preflight CORS
     try{
-      console.log('[Geo] Fetching country…');
-      const r = await fetch(COUNTRY_API + '?t=' + Date.now(), { cache: 'no-store' });
-      console.log('[Geo] HTTP', r.status);
+      const r = await fetch(COUNTRY_API, { mode:'cors', cache:'no-store' });
       if (r.ok){
         const j = await r.json();
-        console.log('[Geo] JSON', j);
         cc = (j && (j.country || j.cc || j.region)) || '';
         if (cc) setCookie('gb_ctry', cc);
       }
-    }catch(err){
-      console.warn('[Geo] fetch failed', err);
-    }
-
+    }catch{/* stay hidden if it fails */}
     return cc || '';
   }
 
   (async () => {
     const cc = await resolveCountry();
-    if (!cc) return;
+    if (!cc) return; // keep hidden if unknown
     chip.textContent = `Hello from ${flag(cc)} ${cc}`;
     chip.hidden = false;
   })();
