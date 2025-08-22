@@ -171,7 +171,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
 })();
 
-/* ===== Visitor Geo Hello (uses your /country Lambda) ===== */
+/* ===== Visitor Geo Hello (country Lambda) ===== */
 (() => {
   const COUNTRY_API = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
@@ -197,9 +197,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
     let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
     if (cc) return cc;
 
-    // IMPORTANT CHANGE: no custom headers => no preflight
     try{
-      const r = await fetch(COUNTRY_API, { cache: 'no-store' });
+      // simple GET, no custom headers => no preflight
+      const r = await fetch(COUNTRY_API + '?t=' + Date.now(), { cache: 'no-store' });
       if (r.ok){
         const j = await r.json();
         cc = (j && (j.country || j.cc || j.region)) || '';
