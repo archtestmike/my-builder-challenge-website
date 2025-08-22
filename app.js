@@ -132,12 +132,14 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Contact form (Lambda submit with graceful fallback) ===== */
 (() => {
-  // If you already have a working Function URL, paste it here:
-  const LAMBDA_URL = ""; // e.g. "https://xxxx.lambda-url.us-east-1.on.aws/"
+  // Your working contact form Function URL
+  const LAMBDA_URL = "https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
+
+  const btn = form.querySelector('button[type="submit"]');
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -150,6 +152,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
     status.textContent = 'Sending…';
     status.style.opacity = '0.9';
+    btn?.setAttribute('disabled', 'true');
 
     try{
       if (LAMBDA_URL){
@@ -161,21 +164,22 @@ document.getElementById('year').textContent = new Date().getFullYear();
         });
         if (!res.ok) throw new Error('Bad response');
       }else{
-        // Local fallback so the UI still works if URL is empty
         await new Promise(r => setTimeout(r, 700));
       }
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
       status.textContent = 'Hmm, something went wrong. Please try again.';
+    }finally{
+      btn?.removeAttribute('disabled');
     }
   });
 })();
 
-/* ===== Visitor Geo Hello (uses your /country Lambda if provided) ===== */
+/* ===== Visitor Geo Hello (uses your /country Lambda) ===== */
 (() => {
-  // Set this to your API Gateway endpoint that returns JSON like { country: "US" }
-  const COUNTRY_API = ""; // e.g. "https://abcd.execute-api.us-east-1.amazonaws.com/country"
+  // Country endpoint Function URL
+  const COUNTRY_API = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const chip = document.getElementById('geo-hello');
   if (!chip) return;
@@ -199,27 +203,26 @@ document.getElementById('year').textContent = new Date().getFullYear();
   };
 
   async function resolveCountry(){
-    // 1) cookie
+    // 1) Existing cookie / CloudFront header cookie
     let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
     if (cc) return cc;
 
-    // 2) API Gateway (optional)
-    if (COUNTRY_API){
-      try{
-        const r = await fetch(COUNTRY_API, { headers:{'cache-control':'no-store'}, mode:'cors' });
-        if (r.ok){
-          const j = await r.json();
-          cc = (j && (j.country || j.cc || j.region)) || '';
-          if (cc) { setCookie('gb_ctry', cc); return cc; }
-        }
-      }catch{}
-    }
-    return '';
+    // 2) Lambda Function URL
+    try{
+      const r = await fetch(COUNTRY_API, { headers:{'cache-control':'no-store'}, mode:'cors' });
+      if (r.ok){
+        const j = await r.json();
+        cc = (j && (j.country || j.cc || j.region)) || '';
+        if (cc) setCookie('gb_ctry', cc);
+      }
+    }catch{ /* silent */ }
+
+    return cc || '';
   }
 
   (async () => {
     const cc = await resolveCountry();
-    if (!cc) return; // stay hidden
+    if (!cc) return; // stay hidden if unresolved
     chip.textContent = `Hello from ${flag(cc)} ${cc}`;
     chip.hidden = false;
   })();
