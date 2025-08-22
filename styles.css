@@ -1,16 +1,11 @@
-/* ====== Base ====== */
 :root{
   --bg:#000;
   --fg:#fff;
-  --muted:#b7c7da;
   --neon:#00ffff;
   --neon-2:#0088ff;
   --card-bg:rgba(255,255,255,0.05);
   --card-border:rgba(0,255,255,0.38);
   --card-shadow:rgba(0,255,255,0.45);
-  --field-bg:rgba(4,12,22,0.55);
-  --field-bd:rgba(0,255,255,0.2);
-  --field-glow:0 0 16px rgba(0,255,255,0.25);
 }
 
 *{box-sizing:border-box}
@@ -19,53 +14,27 @@ body{
   margin:0;
   color:var(--fg);
   background:var(--bg);
-  font-family:"Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family:"Courier New", monospace;
   text-align:center;
   overflow-x:hidden;
 }
 
-/* Scroll progress */
+/* Progress bar */
 #progress-bar{
   position:fixed; top:0; left:0; height:4px; width:0%;
   background:linear-gradient(90deg,var(--neon),var(--neon-2));
   box-shadow:0 0 12px var(--neon);
   z-index:1000;
-  animation:barGlow 2s ease-in-out infinite alternate;
-}
-@keyframes barGlow{
-  from{box-shadow:0 0 8px var(--neon)}
-  to{box-shadow:0 0 18px var(--neon)}
 }
 
-/* Background canvases (stack order) */
-#starfield, #guestbook-layer, #digital-rain{
+/* Backgrounds */
+#starfield,#digital-rain{
   position:fixed; inset:0; width:100%; height:100%;
+  z-index:-2;
 }
-#starfield{ z-index:-3; }
-#guestbook-layer{ z-index:-2; pointer-events:none; } /* hover handled by transparent overlay logic */
 #digital-rain{ z-index:-1; opacity:.22; }
 
-/* Tooltip for guestbook stars */
-.gb-tooltip{
-  position:fixed;
-  left:0; top:0;
-  transform:translate(-9999px, -9999px);
-  padding:6px 10px;
-  font-size:.9rem;
-  color:#dffcff;
-  background:rgba(0,0,0,0.65);
-  border:1px solid rgba(0,255,255,0.35);
-  border-radius:10px;
-  box-shadow:0 0 14px rgba(0,255,255,0.28);
-  backdrop-filter:blur(6px);
-  z-index:800;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity .15s ease;
-}
-.gb-tooltip.show{ opacity:1; }
-
-/* Status badge (AWS) */
+/* Status badge */
 .status-badge{
   position:fixed; top:16px; right:16px;
   padding:8px 16px;
@@ -74,33 +43,27 @@ body{
   background:rgba(0,0,0,0.6);
   color:var(--neon);
   box-shadow:0 0 14px var(--card-shadow);
-  font-size:.9rem;
-  backdrop-filter:blur(6px);
   animation:pulse 2.2s ease-in-out infinite;
   z-index:900;
 }
 .status-badge strong{color:var(--fg)}
-.status-badge span{margin-right:.35rem}
 
 /* Hero */
 .hero-card{
   max-width:680px; margin:6rem auto 3rem;
-  padding:2rem 2.2rem;
+  padding:2rem;
   background:rgba(0,0,0,0.55);
   border-radius:18px;
   border:1px solid var(--card-border);
   box-shadow:0 0 26px var(--card-shadow);
-  backdrop-filter:blur(6px);
-  animation:fadeIn 1s ease;
 }
 .profile-photo{
   width:150px; height:150px; border-radius:50%;
   border:3px solid var(--neon);
   box-shadow:0 0 24px var(--neon);
   margin-bottom:1.1rem;
-  object-fit:cover; object-position:center;
 }
-h1{margin:.25rem 0 0; font-size:2.2rem; letter-spacing:.5px}
+h1{margin:.25rem 0 0; font-size:2.2rem}
 .tagline{color:#9ed3ff; margin:.6rem 0 1.2rem}
 
 /* Buttons */
@@ -113,7 +76,7 @@ h1{margin:.25rem 0 0; font-size:2.2rem; letter-spacing:.5px}
   font-weight:700;
   background:linear-gradient(135deg,var(--neon),var(--neon-2));
   box-shadow:0 0 14px var(--card-shadow);
-  transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+  transition:transform .2s ease, box-shadow .2s ease;
 }
 .btn:hover{ transform:translateY(-1px); box-shadow:0 0 18px var(--neon) }
 .btn-block{ width:100% }
@@ -134,73 +97,50 @@ h2{ margin:0 0 18px }
   background:var(--card-bg);
   border:1px solid var(--card-border);
   box-shadow:0 6px 24px rgba(0,0,0,0.45);
-  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
-.card:hover{
-  transform:translateY(-6px);
-  background:rgba(0,255,255,0.06);
-  box-shadow:0 8px 28px rgba(0,255,255,0.25);
-}
+.card-wide{ max-width:980px; margin:0 auto; }
 
-/* Wide rectangular cards (About & Contact) */
-.card-wide{
-  max-width:980px; margin:0 auto; text-align:center;
+/* Guestbook */
+#guestbook { margin:64px auto; max-width:900px; text-align:center; }
+.stars-container {
+  display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:20px;
 }
-.pulse-slow{ animation:pulse 3.6s ease-in-out infinite }
-@keyframes pulse{
-  0%{ box-shadow:0 0 10px rgba(0,255,255,0.25) }
-  50%{ box-shadow:0 0 22px rgba(0,255,255,0.9) }
-  100%{ box-shadow:0 0 10px rgba(0,255,255,0.25) }
-}
-@keyframes fadeIn{
-  from{ opacity:0; transform:translateY(8px) }
-  to{ opacity:1; transform:translateY(0) }
-}
-
-/* Social buttons (SVG logos) */
-.glow-card{ animation:pulse 2.8s ease-in-out infinite }
-.social-link{
-  color:var(--neon);
-  font-weight:700;
-  text-decoration:none;
-  display:flex; align-items:center; justify-content:center;
-  gap:.55rem;
-}
-.social-icon{ color:#dffcff; display:inline-flex }
-
-/* Contact form — match neon/glass style */
-.contact-form{
-  display:flex; flex-direction:column; gap:14px; margin-top:6px;
-}
-.contact-form input,
-.contact-form textarea{
-  width:100%;
-  padding:12px 14px;
-  border-radius:10px;
-  border:1px solid var(--field-bd);
-  background:var(--field-bg);
+.star {
+  padding:12px 16px;
+  border-radius:12px;
+  background:rgba(0,0,0,0.6);
+  border:1px solid var(--card-border);
+  box-shadow:0 0 12px var(--neon);
+  animation:pulse 3s infinite;
   color:var(--fg);
-  font-family:inherit;
-  box-shadow:inset 0 0 12px rgba(0,255,255,0.08);
-  transition:box-shadow .2s ease, border-color .2s ease, background .2s ease;
 }
-.contact-form textarea{ min-height:140px; resize:vertical }
-.contact-form input::placeholder,
-.contact-form textarea::placeholder{ color:var(--muted) }
-.contact-form input:focus,
-.contact-form textarea:focus{
+
+/* Contact form */
+#contact-form{
+  display:flex; flex-direction:column; gap:14px;
+}
+#contact-form input,
+#contact-form textarea{
+  width:100%; padding:12px 14px; border-radius:10px;
+  border:1px solid transparent;
+  background:rgba(255,255,255,0.08);
+  color:var(--fg);
+}
+#contact-form textarea{ min-height:140px; resize:vertical }
+#contact-form input:focus,
+#contact-form textarea:focus{
   outline:none;
   border-color:var(--neon);
-  box-shadow:var(--field-glow), inset 0 0 18px rgba(0,255,255,0.12);
-  background:rgba(4,12,22,0.66);
+  box-shadow:0 0 10px var(--neon);
 }
 .form-status{ margin:.6rem 0 0; min-height:1.2rem; opacity:.9 }
 
-/* Footer */
-footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
+/* Icons */
+.icon { width:20px; height:20px; vertical-align:middle; margin-right:6px }
 
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce){
-  #progress-bar{ animation:none }
-  .pulse-slow, .glow-card, .status-badge{ animation:none }
+/* Animations */
+@keyframes pulse{
+  0%{ box-shadow:0 0 10px rgba(0,255,255,0.3) }
+  50%{ box-shadow:0 0 22px rgba(0,255,255,0.95) }
+  100%{ box-shadow:0 0 10px rgba(0,255,255,0.3) }
 }
