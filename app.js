@@ -130,16 +130,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Star-Guestbook (geo-aware) =====
-   How to wire the backend (optional but recommended):
-   1) CloudFront Function: read request header `CloudFront-Viewer-Country` and set cookie `gb_ctry=US` (2-letter).
-   2) HTTP API endpoint (GUESTBOOK_API_URL below) with Lambda:
-        - POST { firstName, country } -> put item { id, firstName, country, ts, ttl } to DynamoDB
-        - GET  ?limit=10            -> return latest N items
-   This front-end works even without the backend (optimistic local stars).
+/* ===== Star-Guestbook overlay (AppSync GraphQL) =====
+   - Draws twinkling "name" stars on #guestbook-layer.
+   - On contact form submit, adds a new star (optimistic), and writes to GraphQL.
+   - On load, fetches latest stars from GraphQL and renders them.
 */
 (() => {
-  const API = "";  // <- set to your HTTPS endpoint (e.g., https://abcd123.execute-api.us-east-1.amazonaws.com/guestbook)
+  // === Fill these with your Amplify output ===
+  const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql";
+  const API_KEY = "da2-jmb6sizilbghli5wh4qcjvhopu";
 
   const canvas = document.getElementById('guestbook-layer');
   const tip = document.getElementById('gb-tooltip');
@@ -225,7 +224,47 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
   });
 
-  // Hook into your contact form: optimistic star + optional POST
+  // ===== GraphQL helpers =====
+  const LIST = `
+    query ListStars($limit: Int) {
+      listStars(limit: $limit) { items { id name message createdAt } }
+    }
+  `;
+  const CREATE = `
+    mutation CreateStar($input: CreateStarInput!) {
+      createStar(input: $input) { id name message createdAt }
+    }
+  `;
+  async function gql(query, variables){
+    if (!GRAPHQL_ENDPOINT || !API_KEY) throw new Error("Guestbook not configured");
+    const res = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: { "x-api-key": API_KEY, "content-type":"application/json" },
+      body: JSON.stringify({ query, variables })
+    });
+    const json = await res.json();
+    if (json.errors) throw new Error(json.errors.map(e => e.message).join("; "));
+    return json.data;
+  }
+
+  // Load existing stars (names only) and sprinkle them
+  async function load(){
+    try{
+      const data = await gql(LIST, { limit: 24 });
+      const items = data?.listStars?.items || [];
+      // newest first if createdAt exists
+      items.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+      for (const it of items){
+        const n = (it?.name || 'Friend').toString().split(/\s+/)[0];
+        addStar(n, 'Somewhere'); // country is not in schema; default for loaded items
+      }
+      startLoop();
+    }catch(err){
+      console.warn("Guestbook load failed:", err);
+    }
+  }
+
+  // Hook into your Contact form submission:
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (form){
@@ -233,41 +272,26 @@ document.getElementById('year').textContent = new Date().getFullYear();
       e.preventDefault();
       const fd = new FormData(form);
       const rawName = (fd.get('name') || '').toString().trim();
+      const message  = (fd.get('message') || '').toString().trim();
       const firstName = rawName.split(/\s+/)[0] || 'Friend';
       const country = getCountry();
 
-      // Optimistic: add star locally
+      // Optimistic star now (so you see it immediately)
       addStar(firstName, country);
       startLoop();
 
-      // Persist if API configured
-      if (API){
-        try{
-          await fetch(API, {
-            method: 'POST',
-            headers: {'content-type': 'application/json'},
-            body: JSON.stringify({ firstName, country })
-          });
-        }catch(err){
-          console.warn('Guestbook POST failed:', err);
-        }
+      // Save to GraphQL (name + message)
+      try{
+        await gql(CREATE, { input: { name: rawName || 'Friend', message } });
+        if (status){ status.textContent = 'Thanks! You’re on the sky ✨'; }
+      }catch(err){
+        console.warn('Guestbook GraphQL save failed:', err);
+        if (status){ status.textContent = 'Sent locally (backend busy).'; }
       }
 
-      if (status){ status.textContent = 'Thanks! You’re on the sky ✨'; }
       form.reset();
     });
   }
 
-  // Load last N stars if API configured
-  if (API){
-    fetch(API + '?limit=10')
-      .then(r => r.json())
-      .then(list => {
-        (Array.isArray(list) ? list : []).forEach(it => {
-          if (it && it.firstName) addStar(it.firstName, it.country || 'Somewhere');
-        });
-        startLoop();
-      })
-      .catch(() => {});
-  }
+  load();
 })();
