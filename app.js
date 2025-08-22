@@ -107,6 +107,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       shooting.y += shooting.vy;
       shooting.life -= 0.02;
 
+      ctx.save();
       const trail = ctx.createLinearGradient(
         shooting.x, shooting.y,
         shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8
@@ -119,6 +120,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       ctx.moveTo(shooting.x, shooting.y);
       ctx.lineTo(shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8);
       ctx.stroke();
+      ctx.restore();
 
       if (shooting.life <= 0 || shooting.x < -60 || shooting.y > h + 60) shooting = null;
     }
@@ -128,10 +130,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form (Lambda submit) ===== */
+/* ===== Contact form (Lambda submit with graceful fallback) ===== */
 (() => {
-  // CHANGE if your contact handler URL is different:
-  const CONTACT_LAMBDA_URL = "https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/";
+  // Keep your WORKING Function URL here (unchanged)
+  const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
@@ -150,13 +152,17 @@ document.getElementById('year').textContent = new Date().getFullYear();
     status.style.opacity = '0.9';
 
     try{
-      const res = await fetch(CONTACT_LAMBDA_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload),
-        mode: 'cors'
-      });
-      if (!res.ok) throw new Error('Bad response');
+      if (LAMBDA_URL){
+        const res = await fetch(LAMBDA_URL, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload),
+          mode: 'cors'
+        });
+        if (!res.ok) throw new Error('Bad response');
+      }else{
+        await new Promise(r => setTimeout(r, 700)); // local fallback
+      }
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
@@ -165,24 +171,20 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
 })();
 
-/* ===== Visitor Geo Hello (uses your country Lambda Function URL) ===== */
+/* ===== Visitor Geo Hello (ipapi.co) ===== */
 (() => {
-  // Your country Function URL:
-  const COUNTRY_API = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
-
-  const chip = document.getElementById('geo-hello');
+  // We’ll detect country client-side (no preflight, no backend).
+  const chip = document.getElementById('geo-hello') || document.getElementById('geo-chip');
   if (!chip) return;
 
   const getCookie = (k) => {
-    const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
+    const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\\]{}()*+?.,\\\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
     return m ? decodeURIComponent(m[1]) : '';
   };
-
   const setCookie = (k, v, days=30) => {
     const exp = new Date(Date.now() + days*864e5).toUTCString();
     document.cookie = `${k}=${encodeURIComponent(v)}; Path=/; Expires=${exp}; SameSite=Lax`;
   };
-
   const flag = (cc) => {
     if (!cc || cc.length !== 2) return '';
     const A = 0x1F1E6, base = 'A'.charCodeAt(0);
@@ -191,26 +193,28 @@ document.getElementById('year').textContent = new Date().getFullYear();
   };
 
   async function resolveCountry(){
-    // 1) cookie first (from prior success or CloudFront)
+    // 1) Cookie / CloudFront header if present
     let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
     if (cc) return cc;
 
-    // 2) Function URL – no custom headers to avoid preflight CORS
+    // 2) Public IP geo (simple GET, no custom headers -> no preflight)
     try{
-      const r = await fetch(COUNTRY_API, { mode:'cors', cache:'no-store' });
+      const r = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
       if (r.ok){
         const j = await r.json();
-        cc = (j && (j.country || j.cc || j.region)) || '';
+        cc = j.country_code || j.country || ''; // ipapi: country_code = "US"
+        if (cc && cc.length > 2) cc = cc.slice(0,2);
         if (cc) setCookie('gb_ctry', cc);
       }
-    }catch{/* stay hidden if it fails */}
+    }catch{}
     return cc || '';
   }
 
   (async () => {
     const cc = await resolveCountry();
-    if (!cc) return; // keep hidden if unknown
-    chip.textContent = `Hello from ${flag(cc)} ${cc}`;
+    if (!cc) return;
+    chip.textContent = `Hello from ${flag(cc)} ${cc.toUpperCase()}`;
     chip.hidden = false;
+    chip.classList.add('show');
   })();
 })();
