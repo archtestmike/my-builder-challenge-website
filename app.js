@@ -98,7 +98,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
       s.t += 0.02;
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
     }
     ctx.restore();
 
@@ -128,4 +131,20 @@ document.getElementById('year').textContent = new Date().getFullYear();
     requestAnimationFrame(draw);
   }
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
+})();
+
+/* ===== Contact form (demo only) ===== */
+(() => {
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
+  if (!form || !status) return;
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    status.textContent = 'Sending…';
+    status.style.opacity = '0.9';
+    await new Promise(r => setTimeout(r, 700));
+    status.textContent = 'Thanks! I’ll get back to you soon.';
+    form.reset();
+  });
 })();
