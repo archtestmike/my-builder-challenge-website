@@ -38,12 +38,12 @@ body{
 }
 
 /* Background canvases (stack order) */
-#starfield, #digital-rain, #guestbook-layer{
+#starfield, #guestbook-layer, #digital-rain{
   position:fixed; inset:0; width:100%; height:100%;
 }
 #starfield{ z-index:-3; }
-#digital-rain{ z-index:-2; opacity:.22; pointer-events:none; }
-#guestbook-layer{ z-index:-1; /* top-most of bg layers */ }
+#guestbook-layer{ z-index:-2; pointer-events:none; } /* hover handled by overlay tooltip */
+#digital-rain{ z-index:-1; opacity:.22; }
 
 /* Tooltip for guestbook stars */
 .gb-tooltip{
@@ -143,7 +143,9 @@ h2{ margin:0 0 18px }
 }
 
 /* Wide rectangular cards (About & Contact) */
-.card-wide{ max-width:980px; margin:0 auto; text-align:center; }
+.card-wide{
+  max-width:980px; margin:0 auto; text-align:center;
+}
 .pulse-slow{ animation:pulse 3.6s ease-in-out infinite }
 @keyframes pulse{
   0%{ box-shadow:0 0 10px rgba(0,255,255,0.25) }
@@ -166,7 +168,7 @@ h2{ margin:0 0 18px }
 }
 .social-icon{ color:#dffcff; display:inline-flex }
 
-/* Contact form — neon/glass */
+/* Contact form — match neon/glass style */
 .contact-form{
   display:flex; flex-direction:column; gap:14px; margin-top:6px;
 }
