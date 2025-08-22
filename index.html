@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css?v=5"/>
+  <link rel="stylesheet" href="styles.css?v=6"/>
 </head>
 <body>
   <!-- Scroll progress -->
@@ -84,7 +84,10 @@
 
     <!-- Contact -->
     <section id="contact">
-      <h2>Contact</h2>
+      <h2>
+        Contact
+        <small id="geo-hello" class="hello-chip" aria-live="polite" hidden></small>
+      </h2>
       <div class="card card-wide pulse-slow">
         <form id="contact-form" class="contact-form" novalidate>
           <input type="text" name="name" placeholder="Your Name" required />
@@ -101,7 +104,6 @@
     <p>© <span id="year"></span> Michael Ramirez — Built for the AWS Builder Challenge</p>
   </footer>
 
-  <!-- Only one script; no conflicting inline handler -->
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
