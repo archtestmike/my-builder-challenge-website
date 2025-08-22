@@ -1,3 +1,5 @@
+console.log('[App] loaded ✅');
+
 /* ===== Footer Year ===== */
 document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -132,7 +134,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Star-Guestbook overlay (geo via Lambda; persistence via AppSync) ===== */
 (() => {
-  // ==== CONFIG: set these to your values ====
+  // ==== CONFIG (your values) ====
   const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql";
   const API_KEY = "da2-jmb6sizilbghli5wh4qcjvhopu";
   const COUNTRY_API = "https://f0wpb7czs2.execute-api.us-east-1.amazonaws.com/country"; // optional
@@ -159,10 +161,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (cachedCountry) return cachedCountry;
     try {
       if (COUNTRY_API){
-        const r = await fetch(COUNTRY_API, {
-          mode: "cors",
-          headers: {"cache-control":"no-store"}
-        });
+        const r = await fetch(COUNTRY_API, { mode: "cors", headers: {"cache-control":"no-store"} });
         if (r.ok){
           const j = await r.json();
           cachedCountry = (j && (j.country || j.cc || j.region)) || null;
@@ -171,9 +170,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
           }
         }
       }
-    } catch (e) {
-      console.warn('[GB] Country lookup failed:', e);
-    }
+    } catch (e) { console.warn('[GB] Country lookup failed:', e); }
     if (!cachedCountry){
       const cookie = (k) => {
         const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\\]{}()*+?.,\\\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
@@ -185,11 +182,11 @@ document.getElementById('year').textContent = new Date().getFullYear();
     return cachedCountry;
   }
 
-  // ---------- Star sprites
+  // ---------- Stars
   const stars = []; // {x,y,r,t,name,country}
   function addStar(name, country){
     const x = Math.random()*W, y = Math.random()*H*0.75 + H*0.05;
-    stars.push({ x, y, r: (1.4 + Math.random()*0.6) * DPR, t: Math.random()*Math.PI*2, name, country });
+    stars.push({ x, y, r: (1.6 + Math.random()*0.7) * DPR, t: Math.random()*Math.PI*2, name, country });
   }
 
   function draw(){
@@ -271,7 +268,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     return json.data;
   }
 
-  // Load existing stars (newest first)
+  // Load existing stars
   async function loadStars(){
     try{
       let data = await gql(LIST_WITH_COUNTRY, { limit: 24 });
@@ -292,7 +289,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
   }
 
-  // Hook your Contact form
+  // Hook Contact form
   const contactForm = document.getElementById('contact-form');
   const statusEl = document.getElementById('form-status');
 
@@ -306,11 +303,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
       const country = await lookupCountry();
 
-      // Optimistic star
       addStar(firstName, country);
       startLoop();
 
-      // Persist
       try{
         await gql(CREATE_WITH_COUNTRY, { input: { name: rawName || 'Friend', message, country }});
         if (statusEl) statusEl.textContent = 'Thanks! You’re on the sky ✨';
