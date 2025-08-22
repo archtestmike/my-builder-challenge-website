@@ -139,7 +139,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   // ==== CONFIG: fill these ====
   const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql"; // e.g. https://xxxx.appsync-api.us-east-1.amazonaws.com/graphql
   const API_KEY = "da2-jmb6sizilbghli5wh4qcjvhopu";
-  const COUNTRY_API = ""; // optional, e.g. https://abc123.execute-api.us-east-1.amazonaws.com/prod/country
+  const COUNTRY_API = "https://f0wpb7czs2.execute-api.us-east-1.amazonaws.com/country"; // optional, e.g. https://abc123.execute-api.us-east-1.amazonaws.com/prod/country
 
   const gbCanvas = document.getElementById('guestbook-layer');
   const tip = document.getElementById('gb-tooltip');
