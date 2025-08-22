@@ -42,7 +42,7 @@ body{
   position:fixed; inset:0; width:100%; height:100%;
 }
 #starfield{ z-index:-3; }
-#guestbook-layer{ z-index:-2; pointer-events:none; } /* hover handled by transparent overlay logic */
+#guestbook-layer{ z-index:-2; pointer-events:none; } /* hover handled by overlay tooltip */
 #digital-rain{ z-index:-1; opacity:.22; }
 
 /* Tooltip for guestbook stars */
