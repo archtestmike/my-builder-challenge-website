@@ -68,19 +68,26 @@
       </div>
     </section>
 
-    <!-- ⭐ Star Guestbook -->
-    <section id="guestbook">
-      <h2>⭐ Star Guestbook</h2>
-      <div id="stars-container" class="stars-container">
-        <!-- Stars from API will be rendered here -->
-      </div>
-      <form id="guestbook-form">
-        <input type="text" name="name" placeholder="Your Name" required />
-        <textarea name="message" placeholder="Leave a message ✨" required></textarea>
-        <button type="submit" class="btn">Sign Guestbook</button>
-      </form>
-      <p id="guestbook-status"></p>
-    </section>
+   <!-- ⭐ Star Guestbook -->
+<section id="guestbook">
+  <h2>⭐ Star Guestbook</h2>
+
+  <!-- Stars rendered from API -->
+  <div id="stars-container" class="cards stars-grid" aria-live="polite">
+    <!-- chips get injected here -->
+  </div>
+
+  <!-- Matching neon/glass card for the form -->
+  <div class="card card-wide pulse-slow">
+    <form id="guestbook-form" class="guestbook-form" novalidate>
+      <input type="text" name="name" placeholder="Your Name" required />
+      <textarea name="message" placeholder="Leave a message ✨" required></textarea>
+      <button type="submit" class="btn">Sign Guestbook</button>
+    </form>
+    <p id="guestbook-status" class="form-status" role="status"></p>
+  </div>
+</section>
+
 
     <!-- Contact -->
     <section id="contact">
