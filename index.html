@@ -12,6 +12,10 @@
 
   <!-- Background layers -->
   <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <!-- Geo hello chip (appears when country is resolved) -->
+  <div id="geo-hello" class="geo-chip" hidden></div>
+
   <canvas id="digital-rain" aria-hidden="true"></canvas>
 
   <!-- AWS status badge -->
@@ -84,10 +88,7 @@
 
     <!-- Contact -->
     <section id="contact">
-      <h2>
-        Contact
-        <small id="geo-hello" class="hello-chip" aria-live="polite" hidden></small>
-      </h2>
+      <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
         <form id="contact-form" class="contact-form" novalidate>
           <input type="text" name="name" placeholder="Your Name" required />
