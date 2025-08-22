@@ -164,6 +164,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
+      console.warn('[Contact] submit failed', err);
       status.textContent = 'Hmm, something went wrong. Please try again.';
     }finally{
       btn?.removeAttribute('disabled');
@@ -198,14 +199,18 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (cc) return cc;
 
     try{
-      // simple GET, no custom headers => no preflight
+      console.log('[Geo] Fetching country…');
       const r = await fetch(COUNTRY_API + '?t=' + Date.now(), { cache: 'no-store' });
+      console.log('[Geo] HTTP', r.status);
       if (r.ok){
         const j = await r.json();
+        console.log('[Geo] JSON', j);
         cc = (j && (j.country || j.cc || j.region)) || '';
         if (cc) setCookie('gb_ctry', cc);
       }
-    }catch{}
+    }catch(err){
+      console.warn('[Geo] fetch failed', err);
+    }
 
     return cc || '';
   }
