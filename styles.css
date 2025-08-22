@@ -144,3 +144,52 @@ h2{ margin:0 0 18px }
   50%{ box-shadow:0 0 22px rgba(0,255,255,0.95) }
   100%{ box-shadow:0 0 10px rgba(0,255,255,0.3) }
 }
+
+/* ===== Star Guestbook (matches existing card aesthetic) ===== */
+#guestbook { margin:64px auto; max-width:980px; text-align:center; }
+#guestbook h2 { margin:0 0 18px; }
+
+.stars-grid { gap:12px; }
+
+/* Little glowing chips for each star entry */
+.star-chip{
+  flex:0 1 auto;
+  padding:10px 14px;
+  border-radius:12px;
+  background:rgba(0,0,0,0.55);
+  border:1px solid var(--card-border, rgba(0,255,255,0.38));
+  color:#dffcff;
+  box-shadow:0 0 12px var(--card-shadow, rgba(0,255,255,0.45));
+  animation:pulse 3s ease-in-out infinite;
+  max-width:280px;
+  text-align:left;
+}
+.star-chip b{ color:#fff; }
+
+/* Guestbook form — reuse your contact look */
+.guestbook-form{
+  display:flex; flex-direction:column; gap:14px; margin-top:6px;
+}
+.guestbook-form input,
+.guestbook-form textarea{
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid var(--field-bd, rgba(0,255,255,0.2));
+  background:var(--field-bg, rgba(4,12,22,0.55));
+  color:var(--fg, #fff);
+  font-family:inherit;
+  box-shadow:inset 0 0 12px rgba(0,255,255,0.08);
+  transition:box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+.guestbook-form textarea{ min-height:120px; resize:vertical; }
+.guestbook-form input::placeholder,
+.guestbook-form textarea::placeholder{ color:var(--muted, #b7c7da); }
+.guestbook-form input:focus,
+.guestbook-form textarea:focus{
+  outline:none;
+  border-color:var(--neon, #00ffff);
+  box-shadow:0 0 16px rgba(0,255,255,0.25), inset 0 0 18px rgba(0,255,255,0.12);
+  background:rgba(4,12,22,0.66);
+}
+
