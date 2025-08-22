@@ -4,16 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css?v=2"/>
 </head>
 <body>
   <!-- Scroll progress -->
   <div id="progress-bar"></div>
 
-  <!-- Background layers (order matters) -->
+  <!-- Background layers -->
   <canvas id="starfield" aria-hidden="true"></canvas>
-  <canvas id="guestbook-layer" aria-hidden="true"></canvas>
-  <div id="gb-tooltip" class="gb-tooltip" role="status" aria-live="polite"></div>
   <canvas id="digital-rain" aria-hidden="true"></canvas>
 
   <!-- AWS status badge -->
@@ -32,7 +30,7 @@
   </header>
 
   <main>
-    <!-- About Me -->
+    <!-- About Me (wide rectangle + slow pulse) -->
     <section id="about">
       <h2>About Me</h2>
       <div class="card card-wide pulse-slow">
@@ -55,7 +53,7 @@
       </div>
     </section>
 
-    <!-- Social -->
+    <!-- Find me online -->
     <section id="social">
       <h2>Find Me Online</h2>
       <div class="cards">
@@ -103,6 +101,6 @@
     <p>© <span id="year"></span> Michael Ramirez — Built for the AWS Builder Challenge</p>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>
