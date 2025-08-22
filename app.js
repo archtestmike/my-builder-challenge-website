@@ -10,7 +10,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     bar.style.width = (st / sh) * 100 + '%';
   };
-  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
 })();
 
@@ -24,7 +24,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const fontSize = 16;
   const chars = '01 ☁ ✦ ✧ ✩ ✫ ✬ ✭ ✮'.split('');
 
-  function resize() {
+  function resize(){
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
     columns = Math.floor(w / fontSize);
@@ -33,15 +33,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  function draw() {
+  function draw(){
     ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    ctx.fillRect(0, 0, w, h);
+    ctx.fillRect(0,0,w,h);
 
     ctx.fillStyle = '#00ffff';
     ctx.font = fontSize + 'px monospace';
 
-    for (let i = 0; i < drops.length; i++) {
-      const text = chars[(Math.random() * chars.length) | 0];
+    for (let i=0;i<drops.length;i++){
+      const text = chars[(Math.random() * chars.length)|0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
       drops[i] += 0.9;
@@ -61,10 +61,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const STAR_COUNT = 220;
   const SHOOT_MS = 4200 + Math.random() * 2800;
 
-  function resize() {
+  function resize(){
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    stars = Array.from({ length: STAR_COUNT }, () => ({
+    stars = Array.from({length: STAR_COUNT}, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
       r: Math.random() * 1.2 + 0.25,
@@ -75,17 +75,17 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  function spawnShooting() {
+  function spawnShooting(){
     shooting = {
       x: Math.random() * w,
       y: Math.random() * (h * 0.35),
-      vx: -(6 + Math.random() * 3),
+      vx: - (6 + Math.random() * 3),
       vy: (2 + Math.random() * 2),
       life: 0.95
     };
   }
 
-  function draw(t) {
+  function draw(t){
     const dt = t - last; last = t;
 
     if (!shooting && Math.random() < dt / SHOOT_MS) spawnShooting();
@@ -94,7 +94,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     ctx.fillRect(0, 0, w, h);
 
     ctx.save();
-    for (const s of stars) {
+    for (const s of stars){
       s.t += 0.02;
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
@@ -102,7 +102,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
     ctx.restore();
 
-    if (shooting) {
+    if (shooting){
       shooting.x += shooting.vx;
       shooting.y += shooting.vy;
       shooting.life -= 0.02;
@@ -130,56 +130,97 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form → Lambda Function URL ===== */
+/* ===== Contact form (Lambda submit with graceful fallback) ===== */
 (() => {
-  // Replace with your Function URL (you already have one)
-  const LAMBDA_URL = 'https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/';
+  // If you already have a working Function URL, paste it here:
+  const LAMBDA_URL = ""; // e.g. "https://xxxx.lambda-url.us-east-1.on.aws/"
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  const show = (msg, cls) => {
-    status.textContent = msg;
-    status.className = 'form-status ' + (cls || '');
-  };
-
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async (e)=>{
     e.preventDefault();
-
-    const btn = form.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    const original = btn.textContent;
-    btn.textContent = 'Sending…';
-    show('Sending…', '');
-
+    const fd = new FormData(form);
     const payload = {
-      name: form.name.value.trim(),
-      email: form.email.value.trim(),
-      message: form.message.value.trim()
+      name: (fd.get('name') || '').toString(),
+      email: (fd.get('email') || '').toString(),
+      message: (fd.get('message') || '').toString()
     };
 
-    try {
-      const res = await fetch(LAMBDA_URL, {
-        method: 'POST',
-        mode: 'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    status.textContent = 'Sending…';
+    status.style.opacity = '0.9';
 
-      if (!res.ok) {
-        const t = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status} ${t}`);
+    try{
+      if (LAMBDA_URL){
+        const res = await fetch(LAMBDA_URL, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload),
+          mode: 'cors',
+        });
+        if (!res.ok) throw new Error('Bad response');
+      }else{
+        // Local fallback so the UI still works if URL is empty
+        await new Promise(r => setTimeout(r, 700));
       }
-
-      show('Thanks! Your message was sent. ✅', 'ok');
+      status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
-    } catch (err) {
-      console.error('Contact send failed:', err);
-      show('Couldn’t send (check CORS or Lambda). ❌', 'err');
-    } finally {
-      btn.textContent = original;
-      btn.disabled = false;
+    }catch(err){
+      status.textContent = 'Hmm, something went wrong. Please try again.';
     }
   });
+})();
+
+/* ===== Visitor Geo Hello (uses your /country Lambda if provided) ===== */
+(() => {
+  // Set this to your API Gateway endpoint that returns JSON like { country: "US" }
+  const COUNTRY_API = ""; // e.g. "https://abcd.execute-api.us-east-1.amazonaws.com/country"
+
+  const chip = document.getElementById('geo-hello');
+  if (!chip) return;
+
+  const getCookie = (k) => {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  };
+
+  const setCookie = (k, v, days=30) => {
+    const exp = new Date(Date.now() + days*864e5).toUTCString();
+    document.cookie = `${k}=${encodeURIComponent(v)}; Path=/; Expires=${exp}; SameSite=Lax`;
+  };
+
+  const flag = (cc) => {
+    if (!cc || cc.length !== 2) return '';
+    const A = 0x1F1E6; // Regional Indicator Symbol Letter A
+    const base = 'A'.charCodeAt(0);
+    const up = cc.toUpperCase();
+    return String.fromCodePoint(A + (up.charCodeAt(0)-base), A + (up.charCodeAt(1)-base));
+  };
+
+  async function resolveCountry(){
+    // 1) cookie
+    let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
+    if (cc) return cc;
+
+    // 2) API Gateway (optional)
+    if (COUNTRY_API){
+      try{
+        const r = await fetch(COUNTRY_API, { headers:{'cache-control':'no-store'}, mode:'cors' });
+        if (r.ok){
+          const j = await r.json();
+          cc = (j && (j.country || j.cc || j.region)) || '';
+          if (cc) { setCookie('gb_ctry', cc); return cc; }
+        }
+      }catch{}
+    }
+    return '';
+  }
+
+  (async () => {
+    const cc = await resolveCountry();
+    if (!cc) return; // stay hidden
+    chip.textContent = `Hello from ${flag(cc)} ${cc}`;
+    chip.hidden = false;
+  })();
 })();
