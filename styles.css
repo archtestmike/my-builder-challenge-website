@@ -136,7 +136,7 @@ h2{ margin:0 0 18px }
   box-shadow:0 8px 28px rgba(0,255,255,0.25);
 }
 
-/* Wide rectangular cards (About & Contact) */
+/* Wide rectangular cards */
 .card-wide{ max-width:980px; margin:0 auto; text-align:center; }
 .pulse-slow{ animation:pulse 3.6s ease-in-out infinite }
 @keyframes pulse{
