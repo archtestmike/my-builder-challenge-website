@@ -10,7 +10,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     bar.style.width = (st / sh) * 100 + '%';
   };
-  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 })();
 
@@ -24,7 +24,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const fontSize = 16;
   const chars = '01 ☁ ✦ ✧ ✩ ✫ ✬ ✭ ✮'.split('');
 
-  function resize(){
+  function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
     columns = Math.floor(w / fontSize);
@@ -33,15 +33,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  function draw(){
+  function draw() {
     ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    ctx.fillRect(0,0,w,h);
+    ctx.fillRect(0, 0, w, h);
 
     ctx.fillStyle = '#00ffff';
     ctx.font = fontSize + 'px monospace';
 
-    for (let i=0;i<drops.length;i++){
-      const text = chars[(Math.random() * chars.length)|0];
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[(Math.random() * chars.length) | 0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
       drops[i] += 0.9;
@@ -61,10 +61,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const STAR_COUNT = 220;
   const SHOOT_MS = 4200 + Math.random() * 2800;
 
-  function resize(){
+  function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    stars = Array.from({length: STAR_COUNT}, () => ({
+    stars = Array.from({ length: STAR_COUNT }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
       r: Math.random() * 1.2 + 0.25,
@@ -75,17 +75,17 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  function spawnShooting(){
+  function spawnShooting() {
     shooting = {
       x: Math.random() * w,
       y: Math.random() * (h * 0.35),
-      vx: - (6 + Math.random() * 3),
+      vx: -(6 + Math.random() * 3),
       vy: (2 + Math.random() * 2),
       life: 0.95
     };
   }
 
-  function draw(t){
+  function draw(t) {
     const dt = t - last; last = t;
 
     if (!shooting && Math.random() < dt / SHOOT_MS) spawnShooting();
@@ -94,18 +94,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
     ctx.fillRect(0, 0, w, h);
 
     ctx.save();
-    for (const s of stars){
+    for (const s of stars) {
       s.t += 0.02;
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = '#fff';
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
     }
     ctx.restore();
 
-    if (shooting){
+    if (shooting) {
       shooting.x += shooting.vx;
       shooting.y += shooting.vy;
       shooting.life -= 0.02;
@@ -133,18 +130,56 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form (demo only) ===== */
+/* ===== Contact form → Lambda Function URL ===== */
 (() => {
+  // Replace with your Function URL (you already have one)
+  const LAMBDA_URL = 'https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/';
+
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  form.addEventListener('submit', async (e)=>{
+  const show = (msg, cls) => {
+    status.textContent = msg;
+    status.className = 'form-status ' + (cls || '');
+  };
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    status.textContent = 'Sending…';
-    status.style.opacity = '0.9';
-    await new Promise(r => setTimeout(r, 700));
-    status.textContent = 'Thanks! I’ll get back to you soon.';
-    form.reset();
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = 'Sending…';
+    show('Sending…', '');
+
+    const payload = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      message: form.message.value.trim()
+    };
+
+    try {
+      const res = await fetch(LAMBDA_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status} ${t}`);
+      }
+
+      show('Thanks! Your message was sent. ✅', 'ok');
+      form.reset();
+    } catch (err) {
+      console.error('Contact send failed:', err);
+      show('Couldn’t send (check CORS or Lambda). ❌', 'err');
+    } finally {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
   });
 })();
