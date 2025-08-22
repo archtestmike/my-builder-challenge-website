@@ -101,9 +101,23 @@
       </div>
     </section>
   </main>
+  <!-- Star Guestbook -->
+<section id="guestbook">
+  <h2>⭐ Star Guestbook</h2>
+  <div id="stars-container" class="stars-container">
+    <!-- Stars from API will be rendered here -->
+  </div>
+  <form id="guestbook-form">
+    <input type="text" name="name" placeholder="Your Name" required />
+    <textarea name="message" placeholder="Leave a message ✨" required></textarea>
+    <button type="submit" class="btn">Sign Guestbook</button>
+  </form>
+  <p id="guestbook-status"></p>
+</section>
+
 
   <footer>
-    <p>© <span id="year"></span> Michael Ramirez — Built for the AWS Builder Challenge</p>
+    <p>© <span id="year"></span> Michael Ramirez — Built with 🫶🏼 and AWS</p>
   </footer>
 
   <script src="app.js"></script>
