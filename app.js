@@ -10,7 +10,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     bar.style.width = (st / sh) * 100 + '%';
   };
-  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 })();
 
@@ -24,7 +24,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const fontSize = 16;
   const chars = '01 ☁ ✦ ✧ ✩ ✫ ✬ ✭ ✮'.split('');
 
-  function resize(){
+  function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
     columns = Math.floor(w / fontSize);
@@ -33,15 +33,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  function draw(){
+  function draw() {
     ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    ctx.fillRect(0,0,w,h);
+    ctx.fillRect(0, 0, w, h);
 
     ctx.fillStyle = '#00ffff';
     ctx.font = fontSize + 'px monospace';
 
-    for (let i=0;i<drops.length;i++){
-      const text = chars[(Math.random() * chars.length)|0];
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[(Math.random() * chars.length) | 0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
       drops[i] += 0.9;
@@ -61,10 +61,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const STAR_COUNT = 220;
   const SHOOT_MS = 4200 + Math.random() * 2800;
 
-  function resize(){
+  function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    stars = Array.from({length: STAR_COUNT}, () => ({
+    stars = Array.from({ length: STAR_COUNT }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
       r: Math.random() * 1.2 + 0.25,
@@ -75,17 +75,17 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  function spawnShooting(){
+  function spawnShooting() {
     shooting = {
       x: Math.random() * w,
       y: Math.random() * (h * 0.35),
-      vx: - (6 + Math.random() * 3),
+      vx: -(6 + Math.random() * 3),
       vy: (2 + Math.random() * 2),
       life: 0.95
     };
   }
 
-  function draw(t){
+  function draw(t) {
     const dt = t - last; last = t;
 
     if (!shooting && Math.random() < dt / SHOOT_MS) spawnShooting();
@@ -94,7 +94,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     ctx.fillRect(0, 0, w, h);
 
     ctx.save();
-    for (const s of stars){
+    for (const s of stars) {
       s.t += 0.02;
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
@@ -102,7 +102,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
     ctx.restore();
 
-    if (shooting){
+    if (shooting) {
       shooting.x += shooting.vx;
       shooting.y += shooting.vy;
       shooting.life -= 0.02;
@@ -130,49 +130,48 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Star-Guestbook overlay (Geo from Lambda; persistence via AppSync GraphQL) =====
-   - Add your AppSync GraphQL endpoint & API key below.
-   - Optionally set COUNTRY_API to a small Lambda/API Gateway that returns { country: "US" } for the caller IP.
-   - If COUNTRY_API is unset, we try CloudFront country cookie; else default "Somewhere".
-*/
+/* ===== Star-Guestbook overlay ===== */
 (() => {
-  // ==== CONFIG: fill these ====
-  const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql"; // e.g. https://xxxx.appsync-api.us-east-1.amazonaws.com/graphql
+  // === CONFIG ===
+  const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql";
   const API_KEY = "da2-jmb6sizilbghli5wh4qcjvhopu";
-  const COUNTRY_API = "https://f0wpb7czs2.execute-api.us-east-1.amazonaws.com/country"; // optional, e.g. https://abc123.execute-api.us-east-1.amazonaws.com/prod/country
+  const COUNTRY_API = "https://f0wpb7czs2.execute-api.us-east-1.amazonaws.com/country"; // optional
 
-  const gbCanvas = document.getElementById('guestbook-layer');
+  const canvas = document.getElementById('guestbook-layer');
   const tip = document.getElementById('gb-tooltip');
-  if (!gbCanvas || !tip) return;
-  const ctx = gbCanvas.getContext('2d');
+  if (!canvas || !tip) return;
+  const ctx = canvas.getContext('2d');
   const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
 
-  let W=0, H=0, rafId=0, paused=false;
-  function resize(){
-    W = gbCanvas.width  = Math.floor(window.innerWidth * DPR);
-    H = gbCanvas.height = Math.floor(window.innerHeight * DPR);
-    gbCanvas.style.width = window.innerWidth + "px";
-    gbCanvas.style.height = window.innerHeight + "px";
+  let W = 0, H = 0, rafId = 0, paused = false;
+  function resize() {
+    W = canvas.width = Math.floor(window.innerWidth * DPR);
+    H = canvas.height = Math.floor(window.innerHeight * DPR);
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
   }
-  window.addEventListener('resize', resize, {passive:true});
+  window.addEventListener('resize', resize, { passive: true });
   resize();
 
-  // ---------- Geo: prefer Lambda; fall back to CF cookie; else 'Somewhere'
+  // --- Country lookup (Lambda -> cookie -> default)
   let cachedCountry = null;
-  async function lookupCountry(){
+  async function lookupCountry() {
     if (cachedCountry) return cachedCountry;
-    try{
-      if (COUNTRY_API){
-        const r = await fetch(COUNTRY_API, {headers:{'cache-control':'no-store'}});
-        if (r.ok){
+    try {
+      if (COUNTRY_API) {
+        const r = await fetch(COUNTRY_API, { mode: 'cors', headers: { 'cache-control': 'no-store' } });
+        if (r.ok) {
           const j = await r.json();
           cachedCountry = (j && (j.country || j.cc || j.region)) || null;
+          if (cachedCountry) {
+            document.cookie = `gb_ctry=${cachedCountry}; Path=/; Max-Age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+          }
         }
       }
-    }catch{}
-    if (!cachedCountry){
+    } catch {}
+    if (!cachedCountry) {
       const cookie = (k) => {
-        const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
+        const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g, '\\$&') + '=([^;]*)'));
         return m ? decodeURIComponent(m[1]) : '';
       };
       cachedCountry = cookie('gb_ctry') || cookie('CloudFront-Viewer-Country') || 'Somewhere';
@@ -180,27 +179,23 @@ document.getElementById('year').textContent = new Date().getFullYear();
     return cachedCountry;
   }
 
-  // ---------- Minimal star sprite (twinkling dots)
+  // --- Tiny twinkling star sprites
   const stars = []; // {x,y,r,t,name,country}
-  function addStar(name, country){
-    const x = Math.random()*W, y = Math.random()*H*0.75 + H*0.05;
-    stars.push({
-      x, y,
-      r: (1.4 + Math.random()*0.6) * DPR,
-      t: Math.random()*Math.PI*2,
-      name, country
-    });
+  function addStar(name, country) {
+    const x = Math.random() * W;
+    const y = Math.random() * H * 0.75 + H * 0.05;
+    stars.push({ x, y, r: (1.4 + Math.random() * 0.6) * DPR, t: Math.random() * Math.PI * 2, name, country });
   }
 
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    for(const s of stars){
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
       s.t += 0.03;
-      const a = 0.5 + Math.sin(s.t)*0.45;
+      const a = 0.5 + Math.sin(s.t) * 0.45;
       ctx.globalAlpha = a;
       ctx.fillStyle = '#e9fbff';
       ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -217,27 +212,27 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
   startLoop();
 
-  // ---------- Tooltip hit-test
-  gbCanvas.addEventListener('mousemove', (e) => {
-    const rect = gbCanvas.getBoundingClientRect();
+  // --- Tooltip hit test
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
     const mx = (e.clientX - rect.left) * DPR;
     const my = (e.clientY - rect.top) * DPR;
     let hit = null;
-    for (const s of stars){
+    for (const s of stars) {
       const dx = mx - s.x, dy = my - s.y;
-      if (dx*dx + dy*dy < (8*DPR)*(8*DPR)) { hit = s; break; }
+      if (dx * dx + dy * dy < (8 * DPR) * (8 * DPR)) { hit = s; break; }
     }
-    if (hit){
+    if (hit) {
       tip.textContent = `👋 ${hit.name} from ${hit.country || 'Somewhere'}`;
       tip.style.transform = `translate(${e.clientX + 12}px, ${e.clientY + 12}px)`;
       tip.classList.add('show');
     } else {
       tip.classList.remove('show');
-      tip.style.transform = `translate(-9999px, -9999px)`;
+      tip.style.transform = 'translate(-9999px, -9999px)';
     }
   });
 
-  // ---------- GraphQL helpers
+  // --- GraphQL helpers
   const LIST_WITH_COUNTRY = `
     query ListStars($limit: Int) {
       listStars(limit: $limit) { items { id name message country createdAt } }
@@ -259,74 +254,70 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
   `;
 
-  async function gql(query, variables){
-    if (!GRAPHQL_ENDPOINT || !API_KEY) throw new Error("Guestbook not configured");
+  async function gql(query, variables) {
+    if (!GRAPHQL_ENDPOINT || !API_KEY) throw new Error('Guestbook not configured');
     const res = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
-      headers: { "x-api-key": API_KEY, "content-type":"application/json" },
+      method: 'POST',
+      keepalive: true,
+      headers: { 'x-api-key': API_KEY, 'content-type': 'application/json' },
       body: JSON.stringify({ query, variables })
     });
     const json = await res.json();
-    if (json.errors) throw new Error(json.errors.map(e => e.message).join("; "));
+    if (json.errors) throw new Error(json.errors.map(e => e.message).join('; '));
     return json.data;
   }
 
-  // Load existing stars (newest first)
-  async function loadStars(){
-    try{
+  // Load existing stars
+  async function loadStars() {
+    try {
       let data = await gql(LIST_WITH_COUNTRY, { limit: 24 });
       let items = data?.listStars?.items || [];
-      items.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
-      items.forEach(it => addStar((it?.name||'Friend').split(/\s+/)[0], it?.country || 'Somewhere'));
+      items.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      items.forEach(it => addStar((it?.name || 'Friend').split(/\s+/)[0], it?.country || 'Somewhere'));
       startLoop();
-    }catch(err){
-      // If schema doesn’t have country, fallback to basic
-      try{
+    } catch {
+      try {
         let data = await gql(LIST_BASIC, { limit: 24 });
         let items = data?.listStars?.items || [];
-        items.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
-        items.forEach(it => addStar((it?.name||'Friend').split(/\s+/)[0], 'Somewhere'));
+        items.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        items.forEach(it => addStar((it?.name || 'Friend').split(/\s+/)[0], 'Somewhere'));
         startLoop();
-      }catch(e){
-        console.warn("Guestbook load failed:", e);
+      } catch (e) {
+        console.warn('Guestbook load failed:', e);
       }
     }
   }
 
-  // Hook your Contact form
-  const contactForm = document.getElementById('contact-form');
-  const statusEl = document.getElementById('form-status');
+  // Hook Contact form
+  const form = document.getElementById('contact-form');
+  const status = document.getElementById('form-status');
 
-  if (contactForm){
-    contactForm.addEventListener('submit', async (e) => {
+  if (form) {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const fd = new FormData(contactForm);
+      const fd = new FormData(form);
       const rawName = (fd.get('name') || '').toString().trim();
       const message = (fd.get('message') || '').toString().trim();
       const firstName = rawName.split(/\s+/)[0] || 'Friend';
 
-      // geo (lambda/cookie/default)
       const country = await lookupCountry();
 
-      // optimistic star
       addStar(firstName, country);
       startLoop();
 
-      // try with country; if API schema doesn't support, retry without
-      try{
-        await gql(CREATE_WITH_COUNTRY, { input: { name: rawName || 'Friend', message, country }});
-        if (statusEl) statusEl.textContent = 'Thanks! You’re on the sky ✨';
-      }catch(err){
-        try{
-          await gql(CREATE_BASIC, { input: { name: rawName || 'Friend', message }});
-          if (statusEl) statusEl.textContent = 'Thanks! You’re on the sky ✨';
-        }catch(e2){
+      try {
+        await gql(CREATE_WITH_COUNTRY, { input: { name: rawName || 'Friend', message, country } });
+        if (status) status.textContent = 'Thanks! You’re on the sky ✨';
+      } catch {
+        try {
+          await gql(CREATE_BASIC, { input: { name: rawName || 'Friend', message } });
+          if (status) status.textContent = 'Thanks! You’re on the sky ✨';
+        } catch (e2) {
           console.warn('Guestbook save failed:', e2);
-          if (statusEl) statusEl.textContent = 'Sent locally (backend busy).';
+          if (status) status.textContent = 'Sent locally (backend busy).';
         }
       }
-
-      contactForm.reset();
+      form.reset();
     });
   }
 
