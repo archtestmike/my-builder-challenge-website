@@ -130,9 +130,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form (Lambda submit with graceful fallback) ===== */
+/* ===== Contact form (Lambda submit) ===== */
 (() => {
-  // Your working contact form Function URL
   const LAMBDA_URL = "https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
@@ -155,17 +154,13 @@ document.getElementById('year').textContent = new Date().getFullYear();
     btn?.setAttribute('disabled', 'true');
 
     try{
-      if (LAMBDA_URL){
-        const res = await fetch(LAMBDA_URL, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(payload),
-          mode: 'cors',
-        });
-        if (!res.ok) throw new Error('Bad response');
-      }else{
-        await new Promise(r => setTimeout(r, 700));
-      }
+      const res = await fetch(LAMBDA_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+        mode: 'cors',
+      });
+      if (!res.ok) throw new Error('Bad response');
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
@@ -178,7 +173,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Visitor Geo Hello (uses your /country Lambda) ===== */
 (() => {
-  // Country endpoint Function URL
   const COUNTRY_API = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const chip = document.getElementById('geo-hello');
@@ -188,41 +182,37 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
     return m ? decodeURIComponent(m[1]) : '';
   };
-
   const setCookie = (k, v, days=30) => {
     const exp = new Date(Date.now() + days*864e5).toUTCString();
     document.cookie = `${k}=${encodeURIComponent(v)}; Path=/; Expires=${exp}; SameSite=Lax`;
   };
-
   const flag = (cc) => {
     if (!cc || cc.length !== 2) return '';
-    const A = 0x1F1E6; // Regional Indicator Symbol Letter A
-    const base = 'A'.charCodeAt(0);
+    const A = 0x1F1E6, base = 'A'.charCodeAt(0);
     const up = cc.toUpperCase();
     return String.fromCodePoint(A + (up.charCodeAt(0)-base), A + (up.charCodeAt(1)-base));
   };
 
   async function resolveCountry(){
-    // 1) Existing cookie / CloudFront header cookie
     let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
     if (cc) return cc;
 
-    // 2) Lambda Function URL
+    // IMPORTANT CHANGE: no custom headers => no preflight
     try{
-      const r = await fetch(COUNTRY_API, { headers:{'cache-control':'no-store'}, mode:'cors' });
+      const r = await fetch(COUNTRY_API, { cache: 'no-store' });
       if (r.ok){
         const j = await r.json();
         cc = (j && (j.country || j.cc || j.region)) || '';
         if (cc) setCookie('gb_ctry', cc);
       }
-    }catch{ /* silent */ }
+    }catch{}
 
     return cc || '';
   }
 
   (async () => {
     const cc = await resolveCountry();
-    if (!cc) return; // stay hidden if unresolved
+    if (!cc) return;
     chip.textContent = `Hello from ${flag(cc)} ${cc}`;
     chip.hidden = false;
   })();
