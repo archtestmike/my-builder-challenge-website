@@ -1,4 +1,4 @@
-/* ===== Year ===== */
+/* ===== Footer Year ===== */
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Scroll progress ===== */
@@ -130,41 +130,58 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Star-Guestbook overlay (AppSync GraphQL) =====
-   - Draws twinkling "name" stars on #guestbook-layer.
-   - On contact form submit, adds a new star (optimistic), and writes to GraphQL.
-   - On load, fetches latest stars from GraphQL and renders them.
+/* ===== Star-Guestbook overlay (Geo from Lambda; persistence via AppSync GraphQL) =====
+   - Add your AppSync GraphQL endpoint & API key below.
+   - Optionally set COUNTRY_API to a small Lambda/API Gateway that returns { country: "US" } for the caller IP.
+   - If COUNTRY_API is unset, we try CloudFront country cookie; else default "Somewhere".
 */
 (() => {
-  // === Fill these with your Amplify output ===
-  const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql";
+  // ==== CONFIG: fill these ====
+  const GRAPHQL_ENDPOINT = "https://4htygrrwwvfpfimomf2uhci6z4.appsync-api.us-east-1.amazonaws.com/graphql"; // e.g. https://xxxx.appsync-api.us-east-1.amazonaws.com/graphql
   const API_KEY = "da2-jmb6sizilbghli5wh4qcjvhopu";
+  const COUNTRY_API = ""; // optional, e.g. https://abc123.execute-api.us-east-1.amazonaws.com/prod/country
 
-  const canvas = document.getElementById('guestbook-layer');
+  const gbCanvas = document.getElementById('guestbook-layer');
   const tip = document.getElementById('gb-tooltip');
-  if (!canvas || !tip) return;
-  const ctx = canvas.getContext('2d');
+  if (!gbCanvas || !tip) return;
+  const ctx = gbCanvas.getContext('2d');
   const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
 
   let W=0, H=0, rafId=0, paused=false;
   function resize(){
-    W = canvas.width  = Math.floor(window.innerWidth * DPR);
-    H = canvas.height = Math.floor(window.innerHeight * DPR);
-    canvas.style.width = window.innerWidth + "px";
-    canvas.style.height = window.innerHeight + "px";
+    W = gbCanvas.width  = Math.floor(window.innerWidth * DPR);
+    H = gbCanvas.height = Math.floor(window.innerHeight * DPR);
+    gbCanvas.style.width = window.innerWidth + "px";
+    gbCanvas.style.height = window.innerHeight + "px";
   }
   window.addEventListener('resize', resize, {passive:true});
   resize();
 
+  // ---------- Geo: prefer Lambda; fall back to CF cookie; else 'Somewhere'
+  let cachedCountry = null;
+  async function lookupCountry(){
+    if (cachedCountry) return cachedCountry;
+    try{
+      if (COUNTRY_API){
+        const r = await fetch(COUNTRY_API, {headers:{'cache-control':'no-store'}});
+        if (r.ok){
+          const j = await r.json();
+          cachedCountry = (j && (j.country || j.cc || j.region)) || null;
+        }
+      }
+    }catch{}
+    if (!cachedCountry){
+      const cookie = (k) => {
+        const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : '';
+      };
+      cachedCountry = cookie('gb_ctry') || cookie('CloudFront-Viewer-Country') || 'Somewhere';
+    }
+    return cachedCountry;
+  }
+
+  // ---------- Minimal star sprite (twinkling dots)
   const stars = []; // {x,y,r,t,name,country}
-
-  const readCookie = (k) => {
-    const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') + '=([^;]*)'));
-    return m ? decodeURIComponent(m[1]) : '';
-  };
-  const getCountry = () =>
-    readCookie('gb_ctry') || readCookie('CloudFront-Viewer-Country') || 'Somewhere';
-
   function addStar(name, country){
     const x = Math.random()*W, y = Math.random()*H*0.75 + H*0.05;
     stars.push({
@@ -189,33 +206,29 @@ document.getElementById('year').textContent = new Date().getFullYear();
     ctx.globalAlpha = 1;
     rafId = requestAnimationFrame(draw);
   }
-
   const startLoop = () => {
     if (paused) return;
     cancelAnimationFrame(rafId);
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) rafId = requestAnimationFrame(draw);
   };
-
   document.addEventListener('visibilitychange', () => {
     paused = document.hidden;
-    if (paused) cancelAnimationFrame(rafId);
-    else startLoop();
+    if (paused) cancelAnimationFrame(rafId); else startLoop();
   });
   startLoop();
 
-  // Tooltip follow & hit test
-  canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
+  // ---------- Tooltip hit-test
+  gbCanvas.addEventListener('mousemove', (e) => {
+    const rect = gbCanvas.getBoundingClientRect();
     const mx = (e.clientX - rect.left) * DPR;
     const my = (e.clientY - rect.top) * DPR;
-
     let hit = null;
     for (const s of stars){
       const dx = mx - s.x, dy = my - s.y;
       if (dx*dx + dy*dy < (8*DPR)*(8*DPR)) { hit = s; break; }
     }
     if (hit){
-      tip.textContent = `👋 ${hit.name} from ${hit.country}`;
+      tip.textContent = `👋 ${hit.name} from ${hit.country || 'Somewhere'}`;
       tip.style.transform = `translate(${e.clientX + 12}px, ${e.clientY + 12}px)`;
       tip.classList.add('show');
     } else {
@@ -224,17 +237,28 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
   });
 
-  // ===== GraphQL helpers =====
-  const LIST = `
+  // ---------- GraphQL helpers
+  const LIST_WITH_COUNTRY = `
+    query ListStars($limit: Int) {
+      listStars(limit: $limit) { items { id name message country createdAt } }
+    }
+  `;
+  const LIST_BASIC = `
     query ListStars($limit: Int) {
       listStars(limit: $limit) { items { id name message createdAt } }
     }
   `;
-  const CREATE = `
+  const CREATE_WITH_COUNTRY = `
+    mutation CreateStar($input: CreateStarInput!) {
+      createStar(input: $input) { id name message country createdAt }
+    }
+  `;
+  const CREATE_BASIC = `
     mutation CreateStar($input: CreateStarInput!) {
       createStar(input: $input) { id name message createdAt }
     }
   `;
+
   async function gql(query, variables){
     if (!GRAPHQL_ENDPOINT || !API_KEY) throw new Error("Guestbook not configured");
     const res = await fetch(GRAPHQL_ENDPOINT, {
@@ -247,51 +271,64 @@ document.getElementById('year').textContent = new Date().getFullYear();
     return json.data;
   }
 
-  // Load existing stars (names only) and sprinkle them
-  async function load(){
+  // Load existing stars (newest first)
+  async function loadStars(){
     try{
-      const data = await gql(LIST, { limit: 24 });
-      const items = data?.listStars?.items || [];
-      // newest first if createdAt exists
+      let data = await gql(LIST_WITH_COUNTRY, { limit: 24 });
+      let items = data?.listStars?.items || [];
       items.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
-      for (const it of items){
-        const n = (it?.name || 'Friend').toString().split(/\s+/)[0];
-        addStar(n, 'Somewhere'); // country is not in schema; default for loaded items
-      }
+      items.forEach(it => addStar((it?.name||'Friend').split(/\s+/)[0], it?.country || 'Somewhere'));
       startLoop();
     }catch(err){
-      console.warn("Guestbook load failed:", err);
+      // If schema doesn’t have country, fallback to basic
+      try{
+        let data = await gql(LIST_BASIC, { limit: 24 });
+        let items = data?.listStars?.items || [];
+        items.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+        items.forEach(it => addStar((it?.name||'Friend').split(/\s+/)[0], 'Somewhere'));
+        startLoop();
+      }catch(e){
+        console.warn("Guestbook load failed:", e);
+      }
     }
   }
 
-  // Hook into your Contact form submission:
-  const form = document.getElementById('contact-form');
-  const status = document.getElementById('form-status');
-  if (form){
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const fd = new FormData(form);
-      const rawName = (fd.get('name') || '').toString().trim();
-      const message  = (fd.get('message') || '').toString().trim();
-      const firstName = rawName.split(/\s+/)[0] || 'Friend';
-      const country = getCountry();
+  // Hook your Contact form
+  const contactForm = document.getElementById('contact-form');
+  const statusEl = document.getElementById('form-status');
 
-      // Optimistic star now (so you see it immediately)
+  if (contactForm){
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(contactForm);
+      const rawName = (fd.get('name') || '').toString().trim();
+      const message = (fd.get('message') || '').toString().trim();
+      const firstName = rawName.split(/\s+/)[0] || 'Friend';
+
+      // geo (lambda/cookie/default)
+      const country = await lookupCountry();
+
+      // optimistic star
       addStar(firstName, country);
       startLoop();
 
-      // Save to GraphQL (name + message)
+      // try with country; if API schema doesn't support, retry without
       try{
-        await gql(CREATE, { input: { name: rawName || 'Friend', message } });
-        if (status){ status.textContent = 'Thanks! You’re on the sky ✨'; }
+        await gql(CREATE_WITH_COUNTRY, { input: { name: rawName || 'Friend', message, country }});
+        if (statusEl) statusEl.textContent = 'Thanks! You’re on the sky ✨';
       }catch(err){
-        console.warn('Guestbook GraphQL save failed:', err);
-        if (status){ status.textContent = 'Sent locally (backend busy).'; }
+        try{
+          await gql(CREATE_BASIC, { input: { name: rawName || 'Friend', message }});
+          if (statusEl) statusEl.textContent = 'Thanks! You’re on the sky ✨';
+        }catch(e2){
+          console.warn('Guestbook save failed:', e2);
+          if (statusEl) statusEl.textContent = 'Sent locally (backend busy).';
+        }
       }
 
-      form.reset();
+      contactForm.reset();
     });
   }
 
-  load();
+  loadStars();
 })();
