@@ -44,6 +44,21 @@ body{
 #starfield{ z-index:-2; }
 #digital-rain{ z-index:-1; opacity:.22; }
 
+/* Geo chip (country hello) */
+.geo-chip{
+  position:fixed; top:62px; right:16px;
+  padding:6px 10px;
+  border:1px solid var(--card-border);
+  border-radius:10px;
+  background:rgba(0,0,0,0.55);
+  color:#dffcff;
+  box-shadow:0 0 14px var(--card-shadow);
+  backdrop-filter:blur(6px);
+  font-size:.9rem;
+  z-index:880;
+  animation:pulse 3.2s ease-in-out infinite;
+}
+
 /* Status badge */
 .status-badge{
   position:fixed; top:16px; right:16px;
@@ -173,26 +188,11 @@ h2{ margin:0 0 18px }
 }
 .form-status{ margin:.6rem 0 0; min-height:1.2rem; opacity:.9 }
 
-/* Hello-from (geo) chip */
-.hello-chip{
-  display:inline-flex;
-  align-items:center;
-  gap:.35rem;
-  padding:2px 10px;
-  margin-left:8px;
-  font-size:.9rem;
-  color:#dffcff;
-  border:1px solid var(--card-border);
-  border-radius:9999px;
-  background:rgba(0,0,0,0.35);
-  box-shadow:0 0 10px rgba(0,255,255,0.25);
-}
-
 /* Footer */
 footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   #progress-bar{ animation:none }
-  .pulse-slow, .glow-card, .status-badge{ animation:none }
+  .pulse-slow, .glow-card, .status-badge, .geo-chip{ animation:none }
 }
