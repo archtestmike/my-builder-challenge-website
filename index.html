@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css?v=14"/>
+  <link rel="stylesheet" href="styles.css?v=16"/>
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
   <link rel="preconnect" href="https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws">
@@ -37,7 +37,7 @@
     <!-- About -->
     <section id="about">
       <h2>About Me</h2>
-      <div class="card card-wide about-card">
+      <div class="card card-wide about-card glow-soft">
         <p>
           Hi 👋 my name is Mike. I believe life is most meaningful when we make a difference. I enjoy volunteering in my community, pitching in at events, and showing up when people need support. I share my hobbies and art to spark creativity and connection, and I’m a proud retro SNES gamer 🎮. Professionally I focus on AWS ☁️, using cloud technology to help individuals, organizations, and communities do more. I bring connection, contribution, and curiosity to every project, team, and community I’m part of.
         </p>
@@ -48,7 +48,6 @@
     <section id="facts">
       <h2>Fun Facts About Me</h2>
       <div class="cards">
-        <!-- LEFT -->
         <div class="card glow-soft">
           <a class="fact-link" href="https://builder.aws.com/content/31C2WxIDSQive7q2Dv5xNFCmYJj/aws-builder-challenge-2-build-a-website-on-the-cloud" target="_blank" rel="noopener">
             <div class="fact-title">⭐ Challenge In Progress</div>
@@ -58,7 +57,6 @@
           </a>
         </div>
 
-        <!-- MIDDLE: gallery -->
         <div class="card glow-soft">
           <div class="fact-title">🛠️ DIY Gallery (LED + Airbrush)</div>
           <div id="build-gallery" class="gallery-grid">
@@ -75,7 +73,6 @@
           <p class="gallery-note">Click a tile to expand. Videos play in the lightbox.</p>
         </div>
 
-        <!-- RIGHT -->
         <div class="card glow-soft">
           <div class="fact-title">💡 Fun Project</div>
           <div class="fact-body">
@@ -115,20 +112,6 @@
         </div>
       </div>
     </section>
-
-    <!-- Contact -->
-    <section id="contact">
-      <h2>Contact</h2>
-      <div class="card card-wide pulse-slow">
-        <form id="contact-form" class="contact-form" novalidate>
-          <input type="text" name="name" placeholder="Your Name" required/>
-          <input type="email" name="email" placeholder="Your Email" required/>
-          <textarea name="message" placeholder="Your Message" required></textarea>
-          <button type="submit" class="btn btn-block">Send</button>
-        </form>
-        <p id="form-status" class="form-status" aria-live="polite"></p>
-      </div>
-    </section>
   </main>
 
   <footer>
@@ -139,10 +122,10 @@
   <div id="lightbox" class="lightbox" aria-hidden="true">
     <button class="lb-close" aria-label="Close">×</button>
     <button class="lb-nav lb-prev" aria-label="Previous">‹</button>
-    <figure class="lb-stage"><!-- JS injects <img> or <video> here --></figure>
+    <figure class="lb-stage"></figure>
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
-  <script src="app.js?v=14" defer></script>
+  <script src="app.js?v=16" defer></script>
 </body>
 </html>
