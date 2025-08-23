@@ -44,10 +44,10 @@ body{
 #starfield{ z-index:-2; }
 #digital-rain{ z-index:-1; opacity:.22; }
 
-/* Geo chip */
+/* Geo chip (top-right, pulsing glow) */
 .geo-chip{
   position:fixed;
-  top:64px; left:16px;
+  top:64px; right:16px;          /* moved to the right under the status badge */
   padding:6px 10px;
   font-size:.9rem;
   color:#dffcff;
@@ -56,13 +56,14 @@ body{
   border-radius:10px;
   box-shadow:0 0 14px rgba(0,255,255,0.28);
   backdrop-filter:blur(6px);
-  z-index:850;
+  z-index:880;
   opacity:0; transform:translateY(-4px);
   transition:opacity .2s ease, transform .2s ease;
+  animation:pulse 2.2s ease-in-out infinite; /* match site glow */
 }
 .geo-chip.show{ opacity:1; transform:translateY(0) }
 
-/* Status badge */
+/* Deployment badge */
 .status-badge{
   position:fixed; top:16px; right:16px;
   padding:8px 16px;
@@ -197,5 +198,5 @@ footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   #progress-bar{ animation:none }
-  .pulse-slow, .glow-card, .status-badge{ animation:none }
+  .pulse-slow, .glow-card, .status-badge, .geo-chip{ animation:none }
 }
