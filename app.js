@@ -126,16 +126,16 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
-/* ===== Contact form (Lambda 1 → Lambda 2 → FormSubmit → mailto) ===== */
+/* ===== Contact form (uses CONTACT Lambda URL) ===== */
 (() => {
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  // read config from HTML data-attributes (so you don't edit JS next time)
-  const LAMBDA1 = (form.dataset.lambda1 || "").trim();
-  const LAMBDA2 = (form.dataset.lambda2 || "").trim();
+  const LAMBDA1 = (form.dataset.lambda1 || "").trim(); // ✅ uxgn2q… contact-form-function
+  const LAMBDA2 = (form.dataset.lambda2 || "").trim(); // optional second Lambda
   const FALLBACK_EMAIL = (form.dataset.fallbackEmail || "").trim();
+
   const FORM_SUBMIT_ENDPOINT = FALLBACK_EMAIL
     ? `https://formsubmit.co/ajax/${encodeURIComponent(FALLBACK_EMAIL)}`
     : "";
@@ -143,12 +143,11 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const btn = form.querySelector('button[type="submit"]');
   const setStatus = (msg) => { status.textContent = msg; status.style.opacity = '0.95'; };
 
-  // Use text/plain to avoid CORS preflight if your Function URL doesn't handle OPTIONS
-  function postPlain(url, body, signal){
+  async function postJSON(url, body, signal){
     return fetch(url, {
       method:'POST',
-      headers:{ 'Content-Type':'text/plain;charset=UTF-8' },
-      body,
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(body),
       mode:'cors',
       cache:'no-store',
       signal
@@ -168,10 +167,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
       name: (fd.get('name') || '').toString().trim(),
       email: (fd.get('email') || '').toString().trim(),
       message: (fd.get('message') || '').toString().trim(),
-      ts: new Date().toISOString(),
-      ua: navigator.userAgent
+      ts: new Date().toISOString()
     };
-    const bodyStr = JSON.stringify(payload);
 
     setStatus('Sending…');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; }
@@ -180,25 +177,28 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const timer = setTimeout(()=>ctrl.abort(), 10000);
 
     try{
-      // Try Lambda #1
       if (LAMBDA1){
-        const r1 = await postPlain(LAMBDA1, bodyStr, ctrl.signal);
-        if (r1 && r1.ok){
+        const r1 = await postJSON(LAMBDA1, payload, ctrl.signal);
+        if (r1.ok){
           setStatus('Thanks! I’ll get back to you soon.');
           form.reset();
+          console.debug('Lambda1 OK', await r1.text());
           return;
+        } else {
+          console.warn('Lambda1 failed', r1.status, await r1.text());
         }
       }
-      // Try Lambda #2
       if (LAMBDA2){
-        const r2 = await postPlain(LAMBDA2, bodyStr, ctrl.signal);
-        if (r2 && r2.ok){
+        const r2 = await postJSON(LAMBDA2, payload, ctrl.signal);
+        if (r2.ok){
           setStatus('Thanks! I’ll get back to you soon.');
           form.reset();
+          console.debug('Lambda2 OK', await r2.text());
           return;
+        } else {
+          console.warn('Lambda2 failed', r2.status, await r2.text());
         }
       }
-      // Try FormSubmit emailer
       if (FORM_SUBMIT_ENDPOINT){
         const r3 = await fetch(FORM_SUBMIT_ENDPOINT, {
           method:'POST',
@@ -212,18 +212,18 @@ document.getElementById('year').textContent = new Date().getFullYear();
           cache:'no-store',
           signal: ctrl.signal
         });
-        if (r3 && r3.ok){
+        if (r3.ok){
           setStatus('Thanks! Your message was emailed.');
           form.reset();
           return;
         }
       }
-      // Last resort: mailto
       openMailto(payload);
-      setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
+      setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Add your email to data-fallback-email for a fallback.');
     }catch(err){
-      try{
-        if (FORM_SUBMIT_ENDPOINT){
+      console.error('Submit error', err);
+      if (FORM_SUBMIT_ENDPOINT){
+        try{
           const r = await fetch(FORM_SUBMIT_ENDPOINT, {
             method:'POST',
             headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
@@ -236,18 +236,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
             cache:'no-store',
             signal: ctrl.signal
           });
-          if (r && r.ok){
+          if (r.ok){
             setStatus('Thanks! Your message was emailed.');
             form.reset();
             return;
           }
-        }
-        openMailto(payload);
-        setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
-      }catch{
-        openMailto(payload);
-        setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
+        }catch(e){ console.error('Fallback error', e); }
       }
+      openMailto(payload);
+      setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Add your email to data-fallback-email for a fallback.');
     } finally{
       clearTimeout(timer);
       if (btn) { btn.disabled = false; btn.style.opacity = ''; }
