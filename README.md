@@ -88,8 +88,5 @@ Visit `http://localhost:5500`.
 I lead with **connection**, contribute with **purpose**, and stay **curious**.  
 Builder profile: https://builder.aws/community/@mikear815
 
----
-
-### License
-MIT © Michael Ramirez
+#cloud-launch-challenge-1
 ```
