@@ -128,8 +128,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Contact form (Lambda submit with graceful fallback) ===== */
 (() => {
-  // Use your working Function URL for the contact form here:
-  const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/"; // replace if your contact function differs
+  const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
@@ -167,12 +166,11 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
 })();
 
-/* ===== Visitor Geo Hello (uses ipapi.co for global accuracy) ===== */
+/* ===== Visitor Geo Hello ===== */
 (() => {
   const chip = document.getElementById('geo-hello');
   if (!chip) return;
 
-  // Try CloudFront cookie first for free/instant
   const readCookie = (k) => {
     const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
     return m ? decodeURIComponent(m[1]) : '';
@@ -205,60 +203,108 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox ===== */
+/* ===== Mini Gallery Lightbox (with video cleanup & smooth nav) ===== */
 (() => {
   const root = document.getElementById('build-gallery');
-  const lb = document.getElementById('lightbox');
+  const lb   = document.getElementById('lightbox');
   if (!root || !lb) return;
 
-  const stage = lb.querySelector('.lb-stage');
-  const btnClose = lb.querySelector('.lb-close');
+  const stage   = lb.querySelector('.lb-stage');
+  const btnClose= lb.querySelector('.lb-close');
   const btnPrev = lb.querySelector('.lb-prev');
   const btnNext = lb.querySelector('.lb-next');
 
-  // Collect all items (even hidden) for navigation
   const items = Array.from(root.querySelectorAll('.gallery-item'));
   let idx = -1;
+
+  function cleanupStage(){
+    // Pause and fully release previous video to avoid flicker/jank
+    const vid = stage.querySelector('video');
+    if (vid) {
+      try { vid.pause(); } catch {}
+      vid.removeAttribute('src');
+      vid.load();
+    }
+    stage.textContent = '';
+  }
+
+  function preloadNeighbor(i){
+    const next = items[(i + 1) % items.length];
+    if (next && next.dataset.type === 'img') {
+      const img = new Image();
+      img.src = next.dataset.src;
+    }
+  }
 
   function render(i){
     const it = items[i];
     if (!it) return;
-    stage.innerHTML = '';
-    const type = it.dataset.type;
-    const src  = it.dataset.src;
-    const poster = it.dataset.poster || '';
 
-    if (type === 'video'){
+    cleanupStage();
+
+    if (it.dataset.type === 'video'){
       const v = document.createElement('video');
       v.controls = true;
-      v.src = src;
-      if (poster) v.poster = poster;
+      v.preload  = 'metadata';
+      v.muted    = true;        // improves autoplay reliability
       v.playsInline = true;
+      if (it.dataset.poster) v.poster = it.dataset.poster;
+      v.src = it.dataset.src;
       stage.appendChild(v);
-      // Autoplay when opened, but don’t force sound
-      setTimeout(()=>{ try{ v.play().catch(()=>{}); }catch{} }, 50);
+
+      // Start playback once it's ready; ignore autoplay blocks
+      const tryPlay = () => v.play().catch(()=>{});
+      v.addEventListener('canplay', tryPlay, { once: true });
     } else {
       const img = new Image();
-      img.src = src;
       img.alt = 'Gallery image';
+      img.decoding = 'async';
+      img.loading  = 'eager';
+      img.src = it.dataset.src;
       stage.appendChild(img);
     }
+
+    preloadNeighbor(i);
   }
 
-  function open(i){ idx = i; render(idx); lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); }
-  function close(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); stage.innerHTML=''; idx=-1; }
-  function next(){ if (idx < items.length-1) { idx++; render(idx); } else { idx=0; render(idx);} }
-  function prev(){ if (idx > 0) { idx--; render(idx); } else { idx=items.length-1; render(idx);} }
+  function open(i){
+    idx = i;
+    render(idx);
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden','false');
+    // Prevent background page scroll while lightbox is open
+    document.body.style.overflow = 'hidden';
+  }
 
-  items.forEach((el,i)=> el.addEventListener('click', ()=> open(i)));
+  function close(){
+    cleanupStage();
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden','true');
+    document.body.style.overflow = '';
+    idx = -1;
+  }
+
+  function next(){
+    idx = (idx + 1) % items.length;
+    render(idx);
+  }
+
+  function prev(){
+    idx = (idx - 1 + items.length) % items.length;
+    render(idx);
+  }
+
+  items.forEach((el, i) => el.addEventListener('click', () => open(i)));
   btnClose.addEventListener('click', close);
   btnNext.addEventListener('click', next);
   btnPrev.addEventListener('click', prev);
-  lb.addEventListener('click', (e)=>{ if (e.target === lb) close(); });
-  window.addEventListener('keydown', (e)=>{
+
+  lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+
+  window.addEventListener('keydown', (e) => {
     if (!lb.classList.contains('open')) return;
-    if (e.key === 'Escape') close();
-    if (e.key === 'ArrowRight') next();
-    if (e.key === 'ArrowLeft') prev();
+    if (e.key === 'Escape')      close();
+    if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); prev(); }
   });
 })();
