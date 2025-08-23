@@ -14,7 +14,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   onScroll();
 })();
 
-/* ===== Digital Rain ===== */
+/* ===== Digital Rain (original full-speed pacing) ===== */
 (() => {
   const canvas = document.getElementById('digital-rain');
   if (!canvas) return;
@@ -33,31 +33,23 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  let animId, last = 0; const FPS = 30, INTERVAL = 1000 / FPS;
-  function draw(t){
-    if (t - last >= INTERVAL){
-      last = t;
-      ctx.fillStyle = 'rgba(0,0,0,0.08)';
-      ctx.fillRect(0,0,w,h);
-      ctx.fillStyle = '#00ffff';
-      ctx.font = fontSize + 'px monospace';
-      for (let i=0;i<drops.length;i++){
-        const text = chars[(Math.random() * chars.length)|0];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-        drops[i] += 0.9;
-      }
+  function draw(){
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = '#00ffff';
+    ctx.font = fontSize + 'px monospace';
+    for (let i=0;i<drops.length;i++){
+      const text = chars[(Math.random() * chars.length)|0];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
+      drops[i] += 0.9;
     }
-    animId = requestAnimationFrame(draw);
+    requestAnimationFrame(draw);
   }
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) animId = requestAnimationFrame(draw);
-  document.addEventListener('visibilitychange', ()=>{
-    if (document.hidden) cancelAnimationFrame(animId);
-    else animId = requestAnimationFrame(draw);
-  });
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Starfield (shooting stars) ===== */
+/* ===== Starfield (shooting stars, original pacing) ===== */
 (() => {
   const canvas = document.getElementById('starfield');
   if (!canvas) return;
@@ -81,7 +73,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
   window.addEventListener('resize', resize);
   resize();
 
-  let animId; const FPS = 30, INTERVAL = 1000 / FPS;
   function spawnShooting(){
     shooting = {
       x: Math.random() * w,
@@ -93,51 +84,46 @@ document.getElementById('year').textContent = new Date().getFullYear();
   }
 
   function draw(t){
-    if (t - last >= INTERVAL){
-      last = t;
-      if (!shooting && Math.random() < (INTERVAL / SHOOT_MS)) spawnShooting();
+    const dt = t - last; last = t;
+    if (!shooting && Math.random() < dt / SHOOT_MS) spawnShooting();
 
-      ctx.fillStyle = '#000013';
-      ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#000013';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.save();
+    for (const s of stars){
+      s.t += 0.02;
+      const alpha = s.a + Math.sin(s.t) * 0.22;
+      ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+    }
+    ctx.restore();
+
+    if (shooting){
+      shooting.x += shooting.vx;
+      shooting.y += shooting.vy;
+      shooting.life -= 0.02;
 
       ctx.save();
-      for (const s of stars){
-        s.t += 0.02;
-        const alpha = s.a + Math.sin(s.t) * 0.22;
-        ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
-      }
+      const trail = ctx.createLinearGradient(
+        shooting.x, shooting.y,
+        shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8
+      );
+      trail.addColorStop(0, 'rgba(255,255,255,0.95)');
+      trail.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.strokeStyle = trail; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(shooting.x, shooting.y);
+      ctx.lineTo(shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8);
+      ctx.stroke();
       ctx.restore();
 
-      if (shooting){
-        shooting.x += shooting.vx;
-        shooting.y += shooting.vy;
-        shooting.life -= 0.02;
-
-        ctx.save();
-        const trail = ctx.createLinearGradient(
-          shooting.x, shooting.y,
-          shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8
-        );
-        trail.addColorStop(0, 'rgba(255,255,255,0.95)');
-        trail.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.strokeStyle = trail; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(shooting.x, shooting.y);
-        ctx.lineTo(shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8);
-        ctx.stroke();
-        ctx.restore();
-
-        if (shooting.life <= 0 || shooting.x < -60 || shooting.y > h + 60) shooting = null;
-      }
+      if (shooting.life <= 0 || shooting.x < -60 || shooting.y > h + 60) shooting = null;
     }
-    animId = requestAnimationFrame(draw);
+
+    requestAnimationFrame(draw);
   }
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) animId = requestAnimationFrame(draw);
-  document.addEventListener('visibilitychange', ()=>{
-    if (document.hidden) cancelAnimationFrame(animId);
-    else animId = requestAnimationFrame(draw);
-  });
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
 /* ===== Contact form (Lambda submit) ===== */
@@ -301,15 +287,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
     idx = -1;
   }
 
-  function next(){
-    idx = (idx + 1) % items.length;
-    render(idx);
-  }
-
-  function prev(){
-    idx = (idx - 1 + items.length) % items.length;
-    render(idx);
-  }
+  function next(){ idx = (idx + 1) % items.length; render(idx); }
+  function prev(){ idx = (idx - 1 + items.length) % items.length; render(idx); }
 
   items.forEach((el, i) => el.addEventListener('click', () => open(i)));
   btnClose.addEventListener('click', close);
