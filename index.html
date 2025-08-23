@@ -11,8 +11,8 @@
   <!-- Perf hints -->
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
-  <!-- ✅ Preconnect to the correct contact Lambda URL (POST) -->
-  <link rel="preconnect" href="https://uxgn2qacgicj7pqg3mvvwhg2duq0nkoir.lambda-url.us-east-1.on.aws">
+  <!-- PRECONNECT TO THE **CONTACT** LAMBDA (not the geo one) -->
+  <link rel="preconnect" href="https://uxgn2qacgiqc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws">
 </head>
 <body>
   <!-- Scroll progress -->
@@ -122,11 +122,9 @@
     <section id="contact">
       <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
-        <!-- ✅ Point to the correct Lambda (contact-form-function) and set a fallback email -->
+        <!-- EXACT contact Lambda URL below -->
         <form id="contact-form" class="contact-form" novalidate
-              data-fallback-email="sysad.ramirez@gmail.com"
-              data-lambda1="https://uxgn2qacgicj7pqg3mvvwhg2duq0nkoir.lambda-url.us-east-1.on.aws/"
-              data-lambda2="">
+              data-lambda="https://uxgn2qacgiqc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws/">
           <input type="text" name="name" placeholder="Your Name" required/>
           <input type="email" name="email" placeholder="Your Email" required/>
           <textarea name="message" placeholder="Your Message" required></textarea>
@@ -149,6 +147,7 @@
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
+  <!-- JS -->
   <script src="app.js?v=25" defer></script>
 </body>
 </html>
