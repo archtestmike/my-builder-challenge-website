@@ -50,7 +50,7 @@ body{
   box-shadow:0 0 14px var(--card-shadow);
   font-size:.9rem;
   backdrop-filter:blur(6px);
-  animation:pulse 2.2s ease-in-out infinite;
+  animation:pulse 2.6s ease-in-out infinite;
   z-index:900;
 }
 .status-badge strong{color:var(--fg)}
@@ -65,7 +65,7 @@ body{
   border-radius:10px;
   backdrop-filter:blur(6px);
   box-shadow:0 0 16px rgba(0,255,255,0.25);
-  animation:pulse 3.2s ease-in-out infinite;
+  animation:pulse 3.6s ease-in-out infinite;
   z-index:880;
 }
 
@@ -88,7 +88,7 @@ body{
     radial-gradient(60% 60% at 50% 10%, rgba(0,255,255,0.18), transparent 60%),
     radial-gradient(70% 70% at 50% 100%, rgba(0,136,255,0.18), transparent 70%);
   filter:blur(14px);
-  animation:heroPulse 4.8s ease-in-out infinite;
+  animation:heroPulse 6s ease-in-out infinite;
   z-index:-1;
 }
 @keyframes heroPulse{ 0%,100%{opacity:.55} 50%{opacity:.9} }
@@ -99,7 +99,7 @@ body{
   box-shadow:0 0 22px var(--neon);
   margin-bottom:1.1rem;
   object-fit:cover; object-position:center;
-  animation:photoPulse 3.2s ease-in-out infinite;
+  animation:photoPulse 3.8s ease-in-out infinite;
 }
 @keyframes photoPulse{
   0%  { box-shadow:0 0 18px rgba(0,255,255,.85), 0 0 0 0 rgba(0,255,255,.18) }
@@ -139,9 +139,9 @@ h2{ margin:0 0 18px }
 }
 .card:hover{ transform:translateY(-6px); background:rgba(0,255,255,0.06); box-shadow:0 8px 28px rgba(0,255,255,0.25) }
 
-/* Soft glow/pulse for feature cards */
+/* Soft glow/pulse for feature cards (middle row + about) */
 .glow-soft{
-  animation:softPulse 4.8s ease-in-out infinite;
+  animation:softPulse 6s ease-in-out infinite;
   box-shadow:0 6px 24px rgba(0,0,0,0.45), 0 0 14px rgba(0,255,255,0.08);
 }
 @keyframes softPulse{
@@ -150,7 +150,7 @@ h2{ margin:0 0 18px }
 }
 
 .card-wide{ max-width:980px; margin:0 auto; text-align:center }
-.pulse-slow{ animation:pulse 3.6s ease-in-out infinite }
+.pulse-slow{ animation:pulse 3.8s ease-in-out infinite }
 @keyframes pulse{
   0%{ box-shadow:0 0 10px rgba(0,255,255,0.25) }
   50%{ box-shadow:0 0 22px rgba(0,255,255,0.9) }
@@ -224,7 +224,7 @@ h2{ margin:0 0 18px }
 .lb-prev{ left:16px } .lb-next{ right:16px }
 
 /* Social buttons */
-.glow-card{ animation:pulse 2.8s ease-in-out infinite }
+.glow-card{ animation:pulse 3.2s ease-in-out infinite }
 .social-link{
   color:var(--neon); font-weight:700; text-decoration:none;
   display:flex; align-items:center; justify-content:center; gap:.55rem;
@@ -248,51 +248,41 @@ h2{ margin:0 0 18px }
 }
 .form-status{ margin:.6rem 0 0; min-height:1.2rem; opacity:.9 }
 
-/* Footer */
-footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
+/* Footer (bigger + more breathing room) */
+footer{ margin:48px 0 28px; color:#9aa; font-size:1.06rem; }
+footer p{ margin:0; letter-spacing:.15px }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   #progress-bar{ animation:none }
   .pulse-slow, .glow-card, .geo-chip, .status-badge,
   .hero-card.hero-glow::before, .profile-photo,
-  #about .about-card::before{ animation:none }
+  #about .about-card::before, .glow-soft{ animation:none }
 }
 
-/* ===== About Me polish ===== */
+/* ===== About Me harmonized ===== */
 #about .about-card{
-  /* make the card hug content more so there’s less “shoulder” space */
-  max-width:760px;
+  max-width:900px;                /* wider so shoulders don’t feel empty */
   margin:0 auto;
   position:relative;
-  background:linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.50));
+  background:rgba(0,0,0,0.55);    /* match hero background */
   border:1px solid var(--card-border);
-  border-radius:14px;
-  box-shadow:
-    0 0 18px rgba(0,255,255,0.12),
-    inset 0 0 18px rgba(0,255,255,0.05);
+  border-radius:18px;              /* match hero radius */
+  box-shadow:0 0 26px var(--card-shadow);
   backdrop-filter:blur(6px);
 }
-
-/* Animated neon border (subtle) */
+/* very subtle outer glow (less intensity than before) */
 #about .about-card::before{
-  content:""; position:absolute; inset:-6px; border-radius:20px;
-  background:linear-gradient(135deg, rgba(0,255,255,0.35), rgba(0,136,255,0.25));
-  filter:blur(12px); z-index:-1;
-  animation:aboutGlow 5.4s ease-in-out infinite;
+  content:""; position:absolute; inset:-8px; border-radius:24px; z-index:-1;
+  background:
+    radial-gradient(60% 60% at 50% 0%, rgba(0,255,255,0.16), transparent 60%),
+    radial-gradient(70% 60% at 50% 100%, rgba(0,136,255,0.14), transparent 70%);
+  filter:blur(14px);
+  animation:heroPulse 6.2s ease-in-out infinite;
 }
-@keyframes aboutGlow{ 0%,100%{opacity:.45} 50%{opacity:.9} }
-
-/* Faint texture */
-#about .about-card::after{
-  content:""; position:absolute; inset:8px; border-radius:10px; pointer-events:none;
-  background-image:radial-gradient(rgba(0,255,255,0.08) 1px, transparent 1px);
-  background-size:14px 14px; opacity:.06;
-}
-
-/* Text line length & emphasis */
+/* text */
 #about .about-card p{
-  max-width:72ch;          /* slightly wider to reduce side emptiness */
+  max-width:78ch;
   margin:0 auto;
   text-align:left;
   line-height:1.6;
@@ -302,7 +292,6 @@ footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
   color:#dffcff; font-weight:700; letter-spacing:.3px;
 }
 #about h2{ text-wrap:balance; }
-
 @media (max-width:600px){
   #about .about-card{ max-width:92vw; }
   #about .about-card p{ font-size:.95rem; }
