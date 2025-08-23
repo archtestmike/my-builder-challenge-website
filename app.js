@@ -1,4 +1,4 @@
-// Footer year
+/* ===== Footer Year ===== */
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Scroll progress ===== */
@@ -89,21 +89,21 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const btn = form.querySelector('button[type="submit"]');
   const say = (m) => { status.textContent = m; status.style.opacity = '0.95'; };
 
-  // POST JSON; Function URL CORS handles preflight because "content-type" is allowed.
-  const postJSON = (url, obj, signal) => fetch(url, {
+  // POST with text/plain to avoid preflight; Lambda reads JSON from event.body
+  const postPlain = (url, bodyStr, signal) => fetch(url, {
     method : 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body   : JSON.stringify(obj),
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body   : bodyStr,
     mode   : 'cors',
     cache  : 'no-store',
     signal
   });
 
-  // Fallback to text/plain JSON string (rare proxies)
-  const postPlain = (url, bodyStr, signal) => fetch(url, {
+  // Fallback with JSON
+  const postJSON = (url, obj, signal) => fetch(url, {
     method : 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body   : bodyStr,
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify(obj),
     mode   : 'cors',
     cache  : 'no-store',
     signal
@@ -120,6 +120,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (!payload.name || !payload.email || !payload.message){
       say('Please fill out all fields.'); return;
     }
+    const bodyStr = JSON.stringify(payload);
+
     say('Sending…');
     if (btn){ btn.disabled = true; btn.style.opacity = '0.8'; }
 
@@ -127,22 +129,26 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const timer = setTimeout(() => ctrl.abort(), 15000);
 
     try {
-      // Try JSON first
-      let r = await postJSON(LAMBDA_URL, payload, ctrl.signal);
-      if (!r.ok) {
-        // Fallback: text/plain with JSON string
-        r = await postPlain(LAMBDA_URL, JSON.stringify(payload), ctrl.signal);
+      let ok = false;
+      try {
+        const r1 = await postPlain(LAMBDA_URL, bodyStr, ctrl.signal);
+        ok = r1 && r1.ok;
+      } catch (err) {
+        // swallow and try JSON next
+      }
+      if (!ok) {
+        try {
+          const r2 = await postJSON(LAMBDA_URL, payload, ctrl.signal);
+          ok = r2 && r2.ok;
+        } catch {}
       }
 
-      if (r.ok){
+      if (ok){
         say('Thanks! I’ll get back to you soon.');
         form.reset();
       } else {
         say('Network error. Please try again.');
       }
-    } catch (err) {
-      console.warn('Submit failed:', err);
-      say('Network error. Please try again.');
     } finally {
       clearTimeout(timer);
       if (btn){ btn.disabled = false; btn.style.opacity = ''; }
