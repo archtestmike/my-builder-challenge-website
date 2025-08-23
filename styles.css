@@ -56,7 +56,7 @@ body{
 .status-badge strong{color:var(--fg)}
 .status-badge span{margin-right:.35rem}
 
-/* Geo chip (to the right, beneath badge) */
+/* Geo chip */
 .geo-chip{
   position:fixed; top:62px; right:20px;
   padding:6px 10px;
@@ -71,6 +71,7 @@ body{
 
 /* Hero */
 .hero-card{
+  position:relative;
   max-width:680px; margin:6rem auto 3rem;
   padding:2rem 2.2rem;
   background:rgba(0,0,0,0.55);
@@ -80,13 +81,35 @@ body{
   backdrop-filter:blur(6px);
   animation:fadeIn 1s ease;
 }
+.hero-card.hero-glow::before{
+  content:"";
+  position:absolute; inset:-8px; border-radius:24px;
+  background:
+    radial-gradient(60% 60% at 50% 10%, rgba(0,255,255,0.18), transparent 60%),
+    radial-gradient(70% 70% at 50% 100%, rgba(0,136,255,0.18), transparent 70%);
+  filter:blur(14px);
+  animation:heroPulse 4.8s ease-in-out infinite;
+  z-index:-1;
+}
+@keyframes heroPulse{
+  0%,100%{opacity:.55}
+  50%{opacity:.9}
+}
+
 .profile-photo{
   width:150px; height:150px; border-radius:50%;
   border:3px solid var(--neon);
-  box-shadow:0 0 24px var(--neon);
+  box-shadow:0 0 22px var(--neon);
   margin-bottom:1.1rem;
   object-fit:cover; object-position:center;
+  animation:photoPulse 3.2s ease-in-out infinite;
 }
+@keyframes photoPulse{
+  0%  { box-shadow:0 0 18px rgba(0,255,255,.85), 0 0 0 0 rgba(0,255,255,.18) }
+  50% { box-shadow:0 0 28px rgba(0,255,255,1),   0 0 28px 8px rgba(0,255,255,.10) }
+  100%{ box-shadow:0 0 18px rgba(0,255,255,.85), 0 0 0 0 rgba(0,255,255,.18) }
+}
+
 h1{margin:.25rem 0 0; font-size:2.2rem; letter-spacing:.5px}
 .tagline{color:#9ed3ff; margin:.6rem 0 1.2rem}
 
@@ -145,8 +168,8 @@ h2{ margin:0 0 18px }
   aspect-ratio:16/10; width:100%;
   border-radius:12px; border:1px solid var(--card-border);
   box-shadow:0 6px 24px rgba(0,0,0,.45);
-  background: #0b1a26 var(--bg) no-repeat center/cover;
-  background-image: var(--bg);
+  background:#0b1a26 var(--bg) no-repeat center/cover;
+  background-image:var(--bg);
   position:relative; overflow:hidden; cursor:pointer;
   transition:transform .18s ease, box-shadow .18s ease;
 }
@@ -224,18 +247,36 @@ footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   #progress-bar{ animation:none }
-  .pulse-slow, .glow-card, .status-badge, .geo-chip{ animation:none }
+  .pulse-slow, .glow-card, .status-badge, .geo-chip,
+  .hero-card.hero-glow::before, .profile-photo{ animation:none }
 }
 
-/* ===== About readability (keeps aesthetics) ===== */
-#about .card-wide p{
-  max-width: 68ch;
-  margin: 0 auto;
-  text-align: left;
-  line-height: 1.6;
-  letter-spacing: 0.2px;
+/* ===== About readability + aesthetic (subtle, on-brand) ===== */
+#about .about-card{
+  position:relative;
+  background:rgba(0,0,0,0.55);
+  border:1px solid var(--card-border);
+  box-shadow:
+    0 0 18px rgba(0,255,255,0.12),
+    inset 0 0 18px rgba(0,255,255,0.04);
 }
-#about h2{ text-wrap: balance; }
-@media (max-width: 600px){
-  #about .card-wide p{ font-size: 0.95rem; }
+#about .about-card::before{
+  content:""; position:absolute; inset:-6px; border-radius:20px;
+  background:radial-gradient(70% 120% at 50% 0%, rgba(0,255,255,0.14), transparent 70%);
+  filter:blur(12px); z-index:-1;
+  animation:aboutHalo 5s ease-in-out infinite;
+}
+@keyframes aboutHalo{ 0%,100%{opacity:.45} 50%{opacity:.85} }
+
+#about .about-card p{
+  max-width:68ch;
+  margin:0 auto;
+  text-align:left;
+  line-height:1.6;
+  letter-spacing:.2px;
+}
+#about h2{ text-wrap:balance; }
+
+@media (max-width:600px){
+  #about .about-card p{ font-size:.95rem; }
 }
