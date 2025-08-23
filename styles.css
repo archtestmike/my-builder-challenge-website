@@ -32,38 +32,14 @@ body{
   z-index:1000;
   animation:barGlow 2s ease-in-out infinite alternate;
 }
-@keyframes barGlow{
-  from{box-shadow:0 0 8px var(--neon)}
-  to{box-shadow:0 0 18px var(--neon)}
-}
+@keyframes barGlow{ from{box-shadow:0 0 8px var(--neon)} to{box-shadow:0 0 18px var(--neon)} }
 
 /* Background canvases */
-#starfield, #digital-rain{
-  position:fixed; inset:0; width:100%; height:100%;
-}
-#starfield{ z-index:-2; }
-#digital-rain{ z-index:-1; opacity:.22; }
+#starfield, #digital-rain{ position:fixed; inset:0; width:100%; height:100% }
+#starfield{ z-index:-2 }
+#digital-rain{ z-index:-1; opacity:.22 }
 
-/* Geo chip (top-right, pulsing glow) */
-.geo-chip{
-  position:fixed;
-  top:64px; right:16px;          /* moved to the right under the status badge */
-  padding:6px 10px;
-  font-size:.9rem;
-  color:#dffcff;
-  background:rgba(0,0,0,0.6);
-  border:1px solid rgba(0,255,255,0.35);
-  border-radius:10px;
-  box-shadow:0 0 14px rgba(0,255,255,0.28);
-  backdrop-filter:blur(6px);
-  z-index:880;
-  opacity:0; transform:translateY(-4px);
-  transition:opacity .2s ease, transform .2s ease;
-  animation:pulse 2.2s ease-in-out infinite; /* match site glow */
-}
-.geo-chip.show{ opacity:1; transform:translateY(0) }
-
-/* Deployment badge */
+/* Status badge */
 .status-badge{
   position:fixed; top:16px; right:16px;
   padding:8px 16px;
@@ -79,6 +55,19 @@ body{
 }
 .status-badge strong{color:var(--fg)}
 .status-badge span{margin-right:.35rem}
+
+/* Geo chip (to the right, beneath badge) */
+.geo-chip{
+  position:fixed; top:62px; right:20px;
+  padding:6px 10px;
+  color:#dffcff; background:rgba(0,0,0,0.6);
+  border:1px solid var(--card-border);
+  border-radius:10px;
+  backdrop-filter:blur(6px);
+  box-shadow:0 0 16px rgba(0,255,255,0.25);
+  animation:pulse 3.2s ease-in-out infinite;
+  z-index:880;
+}
 
 /* Hero */
 .hero-card{
@@ -104,11 +93,8 @@ h1{margin:.25rem 0 0; font-size:2.2rem; letter-spacing:.5px}
 /* Buttons */
 .btn{
   display:inline-block;
-  padding:.75rem 1.35rem;
-  border-radius:10px;
-  text-decoration:none;
-  color:#000;
-  font-weight:700;
+  padding:.75rem 1.35rem; border-radius:10px;
+  text-decoration:none; color:#000; font-weight:700;
   background:linear-gradient(135deg,var(--neon),var(--neon-2));
   box-shadow:0 0 14px var(--card-shadow);
   transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
@@ -122,71 +108,108 @@ section{ margin:56px 0 }
 h2{ margin:0 0 18px }
 
 /* Cards */
-.cards{
-  display:flex; flex-wrap:wrap; gap:18px; justify-content:center;
-}
+.cards{ display:flex; flex-wrap:wrap; gap:18px; justify-content:center }
 .card{
-  flex:1 1 240px; max-width:320px;
-  padding:18px;
-  border-radius:14px;
-  background:var(--card-bg);
+  flex:1 1 240px; max-width:320px; padding:18px;
+  border-radius:14px; background:var(--card-bg);
   border:1px solid var(--card-border);
   box-shadow:0 6px 24px rgba(0,0,0,0.45);
   transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+  text-align:left;
 }
-.card:hover{
-  transform:translateY(-6px);
-  background:rgba(0,255,255,0.06);
-  box-shadow:0 8px 28px rgba(0,255,255,0.25);
-}
+.card:hover{ transform:translateY(-6px); background:rgba(0,255,255,0.06); box-shadow:0 8px 28px rgba(0,255,255,0.25) }
 
-/* Wide rectangular cards (About & Contact) */
-.card-wide{ max-width:980px; margin:0 auto; text-align:center; }
+.card-wide{ max-width:980px; margin:0 auto; text-align:center }
 .pulse-slow{ animation:pulse 3.6s ease-in-out infinite }
 @keyframes pulse{
   0%{ box-shadow:0 0 10px rgba(0,255,255,0.25) }
   50%{ box-shadow:0 0 22px rgba(0,255,255,0.9) }
   100%{ box-shadow:0 0 10px rgba(0,255,255,0.25) }
 }
-@keyframes fadeIn{
-  from{ opacity:0; transform:translateY(8px) }
-  to{ opacity:1; transform:translateY(0) }
-}
+@keyframes fadeIn{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
 
-/* Social buttons (SVG logos) */
+/* Fact cards specifics */
+.fact-title{ font-weight:800; margin-bottom:.5rem }
+.fact-body{ color:#d2e7ff }
+.fact-link{ display:block; color:inherit; text-decoration:none }
+.fact-link:hover .underline{ text-decoration:underline; text-decoration-color: var(--neon) }
+.inline-link{ color:var(--neon); font-weight:700; text-decoration:none }
+.inline-link:hover{ text-decoration:underline }
+
+/* Gallery grid (middle card) */
+.gallery-grid{
+  display:grid; grid-template-columns:repeat(2,1fr);
+  gap:10px; margin-top:6px;
+}
+.gallery-item{
+  aspect-ratio:16/10; width:100%;
+  border-radius:12px; border:1px solid var(--card-border);
+  box-shadow:0 6px 24px rgba(0,0,0,.45);
+  background: #0b1a26 var(--bg) no-repeat center/cover;
+  background-image: var(--bg);
+  position:relative; overflow:hidden; cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.gallery-item::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.35));
+}
+.gallery-item:hover{ transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,255,255,.18) }
+.gallery-item.video::before{
+  content:"▶"; position:absolute; right:10px; bottom:6px;
+  font-weight:900; font-size:18px; color:#fff; text-shadow:0 0 8px rgba(0,255,255,.6);
+}
+.gallery-item.hidden{ display:none }
+
+/* Note under gallery */
+.gallery-note{ margin:.5rem 0 0; color:#9ed3ff; font-size:.9rem }
+
+/* Lightbox */
+.lightbox{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.75); backdrop-filter:blur(4px);
+  z-index:1100;
+}
+.lightbox.open{ display:flex }
+.lb-stage{
+  max-width:min(92vw,1000px); max-height:78vh;
+  border:1px solid var(--card-border); border-radius:14px;
+  background:rgba(0,0,0,.6); box-shadow:0 0 24px var(--card-shadow);
+  overflow:hidden;
+}
+.lb-stage img, .lb-stage video{ display:block; max-width:100%; max-height:78vh }
+.lb-close{
+  position:absolute; top:18px; right:22px; font-size:28px; line-height:28px;
+  color:#fff; background:transparent; border:0; cursor:pointer; text-shadow:0 0 8px #000;
+}
+.lb-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:44px; height:44px; border-radius:50%;
+  border:1px solid var(--card-border); background:rgba(0,0,0,.35); color:#dffcff;
+  box-shadow:0 0 12px rgba(0,255,255,.25); cursor:pointer;
+}
+.lb-prev{ left:16px } .lb-next{ right:16px }
+
+/* Social buttons */
 .glow-card{ animation:pulse 2.8s ease-in-out infinite }
 .social-link{
-  color:var(--neon);
-  font-weight:700;
-  text-decoration:none;
-  display:flex; align-items:center; justify-content:center;
-  gap:.55rem;
+  color:var(--neon); font-weight:700; text-decoration:none;
+  display:flex; align-items:center; justify-content:center; gap:.55rem;
 }
 .social-icon{ color:#dffcff; display:inline-flex }
 
-/* Contact form — neon/glass */
-.contact-form{
-  display:flex; flex-direction:column; gap:14px; margin-top:6px;
-}
-.contact-form input,
-.contact-form textarea{
-  width:100%;
-  padding:12px 14px;
-  border-radius:10px;
-  border:1px solid var(--field-bd);
-  background:var(--field-bg);
-  color:var(--fg);
-  font-family:inherit;
-  box-shadow:inset 0 0 12px rgba(0,255,255,0.08);
+/* Contact form */
+.contact-form{ display:flex; flex-direction:column; gap:14px; margin-top:6px }
+.contact-form input, .contact-form textarea{
+  width:100%; padding:12px 14px; border-radius:10px;
+  border:1px solid var(--field-bd); background:var(--field-bg); color:var(--fg);
+  font-family:inherit; box-shadow:inset 0 0 12px rgba(0,255,255,0.08);
   transition:box-shadow .2s ease, border-color .2s ease, background .2s ease;
 }
 .contact-form textarea{ min-height:140px; resize:vertical }
-.contact-form input::placeholder,
-.contact-form textarea::placeholder{ color:var(--muted) }
-.contact-form input:focus,
-.contact-form textarea:focus{
-  outline:none;
-  border-color:var(--neon);
+.contact-form input::placeholder, .contact-form textarea::placeholder{ color:var(--muted) }
+.contact-form input:focus, .contact-form textarea:focus{
+  outline:none; border-color:var(--neon);
   box-shadow:var(--field-glow), inset 0 0 18px rgba(0,255,255,0.12);
   background:rgba(4,12,22,0.66);
 }
