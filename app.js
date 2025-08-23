@@ -36,10 +36,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
   function draw(){
     ctx.fillStyle = 'rgba(0,0,0,0.08)';
     ctx.fillRect(0,0,w,h);
-
     ctx.fillStyle = '#00ffff';
     ctx.font = fontSize + 'px monospace';
-
     for (let i=0;i<drops.length;i++){
       const text = chars[(Math.random() * chars.length)|0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -87,7 +85,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
   function draw(t){
     const dt = t - last; last = t;
-
     if (!shooting && Math.random() < dt / SHOOT_MS) spawnShooting();
 
     ctx.fillStyle = '#000013';
@@ -114,8 +111,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       );
       trail.addColorStop(0, 'rgba(255,255,255,0.95)');
       trail.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.strokeStyle = trail;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = trail; ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(shooting.x, shooting.y);
       ctx.lineTo(shooting.x - shooting.vx * 8, shooting.y - shooting.vy * 8);
@@ -130,10 +126,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form (Lambda submit) ===== */
+/* ===== Contact form (Lambda submit with graceful fallback) ===== */
 (() => {
-  // Your working Function URL (unchanged):
-  const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
+  // Use your working Function URL for the contact form here:
+  const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/"; // replace if your contact function differs
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
@@ -152,13 +148,17 @@ document.getElementById('year').textContent = new Date().getFullYear();
     status.style.opacity = '0.9';
 
     try{
-      const res = await fetch(LAMBDA_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload),
-        mode: 'cors'
-      });
-      if (!res.ok) throw new Error('Bad response');
+      if (LAMBDA_URL){
+        const res = await fetch(LAMBDA_URL, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload),
+          mode: 'cors',
+        });
+        if (!res.ok) throw new Error('Bad response');
+      }else{
+        await new Promise(r => setTimeout(r, 700));
+      }
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
@@ -167,52 +167,98 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
 })();
 
-/* ===== Visitor Geo Hello (ipapi.co) ===== */
+/* ===== Visitor Geo Hello (uses ipapi.co for global accuracy) ===== */
 (() => {
   const chip = document.getElementById('geo-hello');
   if (!chip) return;
 
-  const CACHE_KEY = 'geo_cc';
-  const CACHE_AT = 'geo_cc_at';
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
+  // Try CloudFront cookie first for free/instant
+  const readCookie = (k) => {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\]{}()*+?.,\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  };
+  const cfCC = readCookie('CloudFront-Viewer-Country');
 
-  function flag(cc){
+  async function resolve(){
+    if (cfCC && cfCC.length === 2) return cfCC;
+    try{
+      const r = await fetch('https://ipapi.co/json/', {cache:'no-store'});
+      const j = await r.json();
+      return (j && j.country) || '';
+    }catch{
+      return '';
+    }
+  }
+
+  const flag = (cc) => {
     if (!cc || cc.length !== 2) return '';
     const A = 0x1F1E6, base = 'A'.charCodeAt(0);
     const up = cc.toUpperCase();
     return String.fromCodePoint(A + (up.charCodeAt(0)-base), A + (up.charCodeAt(1)-base));
-  }
+  };
 
-  async function show(cc){
+  (async () => {
+    const cc = await resolve();
+    if (!cc) return;
     chip.textContent = `Hello from ${flag(cc)} ${cc}`;
     chip.hidden = false;
-    chip.classList.add('show');
+  })();
+})();
+
+/* ===== Mini Gallery Lightbox ===== */
+(() => {
+  const root = document.getElementById('build-gallery');
+  const lb = document.getElementById('lightbox');
+  if (!root || !lb) return;
+
+  const stage = lb.querySelector('.lb-stage');
+  const btnClose = lb.querySelector('.lb-close');
+  const btnPrev = lb.querySelector('.lb-prev');
+  const btnNext = lb.querySelector('.lb-next');
+
+  // Collect all items (even hidden) for navigation
+  const items = Array.from(root.querySelectorAll('.gallery-item'));
+  let idx = -1;
+
+  function render(i){
+    const it = items[i];
+    if (!it) return;
+    stage.innerHTML = '';
+    const type = it.dataset.type;
+    const src  = it.dataset.src;
+    const poster = it.dataset.poster || '';
+
+    if (type === 'video'){
+      const v = document.createElement('video');
+      v.controls = true;
+      v.src = src;
+      if (poster) v.poster = poster;
+      v.playsInline = true;
+      stage.appendChild(v);
+      // Autoplay when opened, but don’t force sound
+      setTimeout(()=>{ try{ v.play().catch(()=>{}); }catch{} }, 50);
+    } else {
+      const img = new Image();
+      img.src = src;
+      img.alt = 'Gallery image';
+      stage.appendChild(img);
+    }
   }
 
-  try{
-    const cached = localStorage.getItem(CACHE_KEY);
-    const at = parseInt(localStorage.getItem(CACHE_AT) || '0', 10);
-    if (cached && at && (now - at) < dayMs){
-      show(cached);
-      return;
-    }
-  }catch{}
+  function open(i){ idx = i; render(idx); lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); }
+  function close(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); stage.innerHTML=''; idx=-1; }
+  function next(){ if (idx < items.length-1) { idx++; render(idx); } else { idx=0; render(idx);} }
+  function prev(){ if (idx > 0) { idx--; render(idx); } else { idx=items.length-1; render(idx);} }
 
-  (async ()=>{
-    try{
-      const r = await fetch('https://ipapi.co/json/', { cache: 'no-store', mode: 'cors' });
-      if (!r.ok) return;
-      const j = await r.json();
-      const cc = (j && (j.country_code || j.country)) ? (j.country_code || j.country) : '';
-      if (!cc) return;
-      try{
-        localStorage.setItem(CACHE_KEY, cc);
-        localStorage.setItem(CACHE_AT, String(now));
-      }catch{}
-      show(cc);
-    }catch{
-      /* stay hidden on failure */
-    }
-  })();
+  items.forEach((el,i)=> el.addEventListener('click', ()=> open(i)));
+  btnClose.addEventListener('click', close);
+  btnNext.addEventListener('click', next);
+  btnPrev.addEventListener('click', prev);
+  lb.addEventListener('click', (e)=>{ if (e.target === lb) close(); });
+  window.addEventListener('keydown', (e)=>{
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
 })();
