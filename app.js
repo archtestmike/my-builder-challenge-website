@@ -126,19 +126,19 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
-/* ===== Contact form (Lambda first, graceful email fallbacks) ===== */
+/* ===== Contact form (Lambda → FormSubmit → mailto) ===== */
 (() => {
-  // 1) Your Lambda Function URL (kept as-is):
   const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
-
-  // 2) Set this to YOUR email (fallback path uses FormSubmit + mailto):
-  const FALLBACK_EMAIL = "you@example.com"; // <-- CHANGE THIS
-
-  const FORM_SUBMIT_ENDPOINT = `https://formsubmit.co/ajax/${encodeURIComponent(FALLBACK_EMAIL)}`;
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
+
+  // read fallback email from HTML to avoid editing JS again
+  const FALLBACK_EMAIL = (form.dataset.fallbackEmail || "").trim();
+  const FORM_SUBMIT_ENDPOINT = FALLBACK_EMAIL
+    ? `https://formsubmit.co/ajax/${encodeURIComponent(FALLBACK_EMAIL)}`
+    : "";
 
   const btn = form.querySelector('button[type="submit"]');
   const setStatus = (msg) => { status.textContent = msg; status.style.opacity = '0.95'; };
@@ -155,6 +155,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   }
 
   async function tryFormSubmit(payload, signal){
+    if (!FORM_SUBMIT_ENDPOINT) throw new Error('No fallback email set');
     return fetch(FORM_SUBMIT_ENDPOINT, {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
@@ -169,6 +170,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   }
 
   function openMailto(payload){
+    if (!FALLBACK_EMAIL) return;
     const mailto = `mailto:${FALLBACK_EMAIL}?subject=${encodeURIComponent('Website contact from ' + payload.name)}&body=${encodeURIComponent(payload.message + '\n\n— ' + payload.name + ' <' + payload.email + '>')}`;
     window.location.href = mailto;
   }
@@ -186,18 +188,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
     setStatus('Sending…');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; }
 
-    // 10s timeout for network issues
     const ctrl = new AbortController();
     const timer = setTimeout(()=>ctrl.abort(), 10000);
 
     try{
-      // Try Lambda first
       let res = await tryLambda(bodyStr, ctrl.signal);
       if (res && res.ok){
         setStatus('Thanks! I’ll get back to you soon.');
         form.reset();
       } else {
-        // Fallback: FormSubmit emailer
         const r2 = await tryFormSubmit(payload, ctrl.signal);
         if (r2 && r2.ok){
           setStatus('Thanks! Your message was emailed.');
@@ -208,7 +207,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
         }
       }
     } catch(err){
-      // Network/timeout: try FormSubmit, then mailto
       try{
         const r2 = await tryFormSubmit(payload, ctrl.signal);
         if (r2 && r2.ok){
@@ -220,7 +218,11 @@ document.getElementById('year').textContent = new Date().getFullYear();
         }
       }catch{
         openMailto(payload);
-        setStatus('Opening your email app so you can send this message…');
+        if (FALLBACK_EMAIL){
+          setStatus('Opening your email app so you can send this message…');
+        }else{
+          setStatus('Couldn’t send. Set your email in the form’s data-fallback-email attribute.');
+        }
       }
     } finally{
       clearTimeout(timer);
