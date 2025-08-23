@@ -14,7 +14,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   onScroll();
 })();
 
-/* ===== Digital Rain (original full-speed pacing) ===== */
+/* ===== Digital Rain (slightly slower) ===== */
 (() => {
   const canvas = document.getElementById('digital-rain');
   if (!canvas) return;
@@ -42,14 +42,14 @@ document.getElementById('year').textContent = new Date().getFullYear();
       const text = chars[(Math.random() * chars.length)|0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-      drops[i] += 0.9;
+      drops[i] += 0.84; // was 0.90 — just a touch slower
     }
     requestAnimationFrame(draw);
   }
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Starfield (shooting stars, original pacing) ===== */
+/* ===== Starfield (slightly slower & a bit less frequent shooting stars) ===== */
 (() => {
   const canvas = document.getElementById('starfield');
   if (!canvas) return;
@@ -57,7 +57,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
   let w, h, stars = [], shooting = null, last = 0;
   const STAR_COUNT = 220;
-  const SHOOT_MS = 4200 + Math.random() * 2800;
+  const SHOOT_MS = 4600 + Math.random() * 3200; // was ~4200–7000ms
 
   function resize(){
     w = canvas.width = window.innerWidth;
@@ -92,7 +92,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
     ctx.save();
     for (const s of stars){
-      s.t += 0.02;
+      s.t += 0.018; // was 0.020 — very small slow-down
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
@@ -295,7 +295,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   btnNext.addEventListener('click', next);
   btnPrev.addEventListener('click', prev);
 
-  // simple focus trap for accessibility
+  // simple focus trap
   lb.addEventListener('keydown', e=>{
     if(e.key!=='Tab') return;
     const focusables=[btnClose,btnPrev,btnNext];
