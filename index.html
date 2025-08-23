@@ -4,8 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css?v=11"/>
-  <!-- Small perf wins -->
+  <link rel="stylesheet" href="styles.css?v=13"/>
+  <!-- Perf hints -->
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
   <link rel="preconnect" href="https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws">
@@ -49,7 +49,7 @@
     <section id="facts">
       <h2>Fun Facts About Me</h2>
       <div class="cards">
-        <!-- LEFT: link to Challenge #2 (star emoji) -->
+        <!-- LEFT: link to Challenge #2 -->
         <div class="card">
           <a class="fact-link" href="https://builder.aws.com/content/31C2WxIDSQive7q2Dv5xNFCmYJj/aws-builder-challenge-2-build-a-website-on-the-cloud" target="_blank" rel="noopener">
             <div class="fact-title">⭐ Challenge In Progress</div>
@@ -59,11 +59,10 @@
           </a>
         </div>
 
-        <!-- MIDDLE: Mini gallery (2x2) with lightbox -->
+        <!-- MIDDLE: Mini gallery with lightbox -->
         <div class="card">
           <div class="fact-title">🛠️ DIY Gallery (LED + Airbrush)</div>
           <div id="build-gallery" class="gallery-grid">
-            <!-- Show the first four; keep the rest hidden for the lightbox navigation -->
             <button class="gallery-item" data-type="img"   data-src="media/image1.jpeg" style="--bg:url('media/image1.jpeg')" aria-label="Gallery image 1"></button>
             <button class="gallery-item video" data-type="video" data-src="media/vid1.mp4" data-poster="media/image2.jpeg" style="--bg:url('media/image2.jpeg')" aria-label="Gallery video 1"></button>
             <button class="gallery-item" data-type="img"   data-src="media/image3.jpeg" style="--bg:url('media/image3.jpeg')" aria-label="Gallery image 2"></button>
@@ -145,6 +144,6 @@
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
-  <script src="app.js?v=11" defer></script>
+  <script src="app.js?v=13" defer></script>
 </body>
 </html>
