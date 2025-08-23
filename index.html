@@ -4,24 +4,33 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css?v=26"/>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css?v=25"/>
+
+  <!-- Perf hints -->
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
-  <!-- ✅ preconnect to the CONTACT Lambda (uxgn2…) -->
-  <link rel="preconnect" href="https://uxgn2qagcigc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws">
+  <!-- ✅ Preconnect to the correct contact Lambda URL (POST) -->
+  <link rel="preconnect" href="https://uxgn2qacgicj7pqg3mvvwhg2duq0nkoir.lambda-url.us-east-1.on.aws">
 </head>
 <body>
+  <!-- Scroll progress -->
   <div id="progress-bar"></div>
 
+  <!-- Background layers -->
   <canvas id="starfield" aria-hidden="true"></canvas>
   <canvas id="digital-rain" aria-hidden="true"></canvas>
 
+  <!-- Status badge -->
   <div class="status-badge" title="Deployed on Amplify + Lambda">
     <span>🚀</span> Deployed on <strong>AWS Amplify</strong> + <strong>Lambda</strong>
   </div>
 
+  <!-- Geo chip -->
   <div id="geo-hello" class="geo-chip" hidden>Hello from 🌎</div>
 
+  <!-- Hero -->
   <header class="hero-card hero-glow">
     <img src="profile-phote.jpg" alt="Mike profile photo" class="profile-photo" width="150" height="150" fetchpriority="high"/>
     <h1>Michael Ramirez</h1>
@@ -30,6 +39,7 @@
   </header>
 
   <main>
+    <!-- About -->
     <section id="about">
       <h2>About Me</h2>
       <div class="card card-wide about-card glow-soft">
@@ -39,6 +49,7 @@
       </div>
     </section>
 
+    <!-- Fun facts -->
     <section id="facts">
       <h2>Fun Facts About Me</h2>
       <div class="cards">
@@ -59,6 +70,7 @@
             <button class="gallery-item" data-type="img"   data-src="media/image3.jpeg" style="--bg:url('media/image3.jpeg')" aria-label="Gallery image 2"></button>
             <button class="gallery-item video" data-type="video" data-src="media/vid2.mp4" data-poster="media/image4.jpeg" style="--bg:url('media/image4.jpeg')" aria-label="Gallery video 2"></button>
 
+            <!-- Hidden (for lightbox nav only) -->
             <button class="gallery-item hidden" data-type="img"   data-src="media/image4.jpeg"></button>
             <button class="gallery-item hidden" data-type="img"   data-src="media/image5.jpeg"></button>
             <button class="gallery-item hidden" data-type="video" data-src="media/vid3.mp4" data-poster="media/image5.jpeg"></button>
@@ -79,6 +91,7 @@
       </div>
     </section>
 
+    <!-- Find me -->
     <section id="social">
       <h2>Find Me Online</h2>
       <div class="cards">
@@ -105,13 +118,14 @@
       </div>
     </section>
 
+    <!-- Contact -->
     <section id="contact">
       <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
-        <!-- ✅ CONTACT Lambda; add your email if you want a client-side fallback -->
+        <!-- ✅ Point to the correct Lambda (contact-form-function) and set a fallback email -->
         <form id="contact-form" class="contact-form" novalidate
-              data-fallback-email=""
-              data-lambda1="https://uxgn2qagcigc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws/"
+              data-fallback-email="sysad.ramirez@gmail.com"
+              data-lambda1="https://uxgn2qacgicj7pqg3mvvwhg2duq0nkoir.lambda-url.us-east-1.on.aws/"
               data-lambda2="">
           <input type="text" name="name" placeholder="Your Name" required/>
           <input type="email" name="email" placeholder="Your Email" required/>
@@ -127,6 +141,7 @@
     <p>© <span id="year"></span> Michael Ramirez — Built with ❤️‍🔥 on AWS</p>
   </footer>
 
+  <!-- Lightbox -->
   <div id="lightbox" class="lightbox" aria-hidden="true">
     <button class="lb-close" aria-label="Close">×</button>
     <button class="lb-nav lb-prev" aria-label="Previous">‹</button>
@@ -134,6 +149,6 @@
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
-  <script src="app.js?v=26" defer></script>
+  <script src="app.js?v=25" defer></script>
 </body>
 </html>
