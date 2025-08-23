@@ -254,7 +254,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       stage.appendChild(v);
 
       const tryPlay = () => {
-        if (token !== renderToken) return; // stale render, abort
+        if (token !== renderToken) return;
         v.play().catch(()=>{});
       };
       v.addEventListener('canplay', tryPlay, { once: true });
