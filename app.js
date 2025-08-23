@@ -38,45 +38,103 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Starfield ===== */
+/* ===== Starfield (with reliable shooting stars) ===== */
 (() => {
   const canvas = document.getElementById('starfield'); if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  let w, h, stars = [], shooting = null, last = 0;
-  const STAR_COUNT = 220; const SHOOT_MS = 5200 + Math.random() * 3800;
-  function resize(){
-    w = canvas.width = innerWidth; h = canvas.height = innerHeight;
-    stars = Array.from({length: STAR_COUNT}, () => ({
-      x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.2 + 0.25,
-      a: Math.random()*0.6 + 0.2, t: Math.random()*Math.PI*2
+
+  let W, H, DPR, stars = [];
+  let shooters = [];
+  let lastT = 0, lastSpawn = 0;
+  const STAR_COUNT = 220;
+  const MIN_GAP = 3500;   // min ms between shooting stars
+  const MAX_GAP = 7000;   // max ms between shooting stars
+  let nextGap = rand(MIN_GAP, MAX_GAP);
+
+  function rand(a, b){ return a + Math.random() * (b - a); }
+
+  function setSize() {
+    DPR = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    canvas.width  = Math.floor(innerWidth * DPR);
+    canvas.height = Math.floor(innerHeight * DPR);
+    canvas.style.width  = innerWidth + 'px';
+    canvas.style.height = innerHeight + 'px';
+    W = canvas.width; H = canvas.height;
+
+    stars = Array.from({ length: STAR_COUNT }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: (Math.random() * 1.2 + 0.25) * DPR,
+      a: Math.random() * 0.6 + 0.2,
+      t: Math.random() * Math.PI * 2
     }));
   }
-  addEventListener('resize', resize); resize();
-  function spawn(){ shooting = { x: Math.random()*w, y: Math.random()*(h*0.35), vx: -(6+Math.random()*3), vy: (2+Math.random()*2), life: 0.95 }; }
-  function draw(t){
-    const dt = t - last; last = t;
-    if (!shooting && Math.random() < dt / SHOOT_MS) spawn();
-    ctx.fillStyle = '#000013'; ctx.fillRect(0,0,w,h);
+  addEventListener('resize', setSize);
+  setSize();
+
+  function spawn() {
+    // start from upper-right quadrant, travel down-left
+    const x = W * (0.6 + Math.random() * 0.4);
+    const y = H * (Math.random() * 0.35);
+    const speed = (0.6 + Math.random() * 0.6) * DPR; // px per frame
+    shooters.push({ x, y, vx: -8 * speed, vy: 3 * speed, life: 1, width: 2 * DPR });
+    lastSpawn = lastT;
+    nextGap = rand(MIN_GAP, MAX_GAP);
+  }
+
+  function draw(ts) {
+    if (!lastT) lastT = ts;
+    const dt = ts - lastT;
+    lastT = ts;
+
+    // Background
+    ctx.fillStyle = '#000013';
+    ctx.fillRect(0, 0, W, H);
+
+    // Stars (twinkle)
     ctx.save();
-    for (const s of stars){
-      s.t += 0.016; const a = s.a + Math.sin(s.t) * 0.22;
+    for (const s of stars) {
+      s.t += 0.016;
+      const a = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, a));
-      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
     }
     ctx.restore();
-    if (shooting){
-      shooting.x += shooting.vx; shooting.y += shooting.vy; shooting.life -= 0.02;
-      ctx.save();
-      const g = ctx.createLinearGradient(shooting.x, shooting.y, shooting.x - shooting.vx*8, shooting.y - shooting.vy*8);
-      g.addColorStop(0,'rgba(255,255,255,0.95)'); g.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.beginPath();
-      ctx.moveTo(shooting.x, shooting.y); ctx.lineTo(shooting.x - shooting.vx*8, shooting.y - shooting.vy*8); ctx.stroke();
-      ctx.restore();
-      if (shooting.life <= 0 || shooting.x < -60 || shooting.y > h + 60) shooting = null;
+
+    // Ensure a shooting star every few seconds
+    if (ts - lastSpawn > nextGap && shooters.length < 1) spawn();
+
+    // Shooting stars
+    ctx.lineCap = 'round';
+    for (let i = shooters.length - 1; i >= 0; i--) {
+      const sh = shooters[i];
+      sh.x += sh.vx;
+      sh.y += sh.vy;
+      sh.life -= 0.02;
+
+      const g = ctx.createLinearGradient(sh.x, sh.y, sh.x - sh.vx * 0.6, sh.y - sh.vy * 0.6);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = sh.width;
+
+      ctx.beginPath();
+      ctx.moveTo(sh.x, sh.y);
+      ctx.lineTo(sh.x - sh.vx * 0.6, sh.y - sh.vy * 0.6);
+      ctx.stroke();
+
+      if (sh.life <= 0 || sh.x < -60 * DPR || sh.y > H + 60 * DPR) shooters.splice(i, 1);
     }
+
     requestAnimationFrame(draw);
   }
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
+
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    requestAnimationFrame(draw);
+  }
 })();
 
 /* ===== Contact form → Lambda (SNS) ===== */
@@ -85,7 +143,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  const LAMBDA_URL = (form.dataset.lambda || '').trim(); // exact Function URL
+  const LAMBDA_URL = (form.dataset.lambda || '').trim(); // exact Function URL from data-lambda
   const btn = form.querySelector('button[type="submit"]');
   const say = (m) => { status.textContent = m; status.style.opacity = '0.95'; };
 
@@ -99,7 +157,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
     signal
   });
 
-  // Fallback with JSON
+  // Fallback with application/json (in case text/plain gets rejected by a proxy)
   const postJSON = (url, obj, signal) => fetch(url, {
     method : 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -126,21 +184,27 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (btn){ btn.disabled = true; btn.style.opacity = '0.8'; }
 
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000);
+    const timer = setTimeout(() => ctrl.abort(), 15000); // 15s safety
 
     try {
       let ok = false;
+      // Try text/plain (simple request, no preflight)
       try {
         const r1 = await postPlain(LAMBDA_URL, bodyStr, ctrl.signal);
         ok = r1 && r1.ok;
+        if (!ok) console.warn('Lambda returned non-OK to text/plain:', r1 && r1.status);
       } catch (err) {
-        // swallow and try JSON next
+        console.warn('text/plain fetch failed:', err);
       }
+      // Fallback: application/json
       if (!ok) {
         try {
           const r2 = await postJSON(LAMBDA_URL, payload, ctrl.signal);
           ok = r2 && r2.ok;
-        } catch {}
+          if (!ok) console.warn('Lambda returned non-OK to JSON:', r2 && r2.status);
+        } catch (err) {
+          console.warn('JSON fetch failed:', err);
+        }
       }
 
       if (ok){
