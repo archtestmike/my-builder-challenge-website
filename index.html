@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css?v=13"/>
+  <link rel="stylesheet" href="styles.css?v=10"/>
 </head>
 <body>
   <!-- Scroll progress -->
@@ -12,29 +12,26 @@
 
   <!-- Background layers -->
   <canvas id="starfield" aria-hidden="true"></canvas>
-
-  <!-- Geo hello chip (auto-shown after successful lookup) -->
-  <div id="geo-hello" class="geo-chip" hidden></div>
-
   <canvas id="digital-rain" aria-hidden="true"></canvas>
 
-  <!-- Deployment status badge -->
-  <div class="status-badge" title="Deployed with AWS Amplify and AWS Lambda">
-    <span>🚀</span> Deployed with <strong>AWS Amplify</strong> + <strong>Lambda</strong>
+  <!-- Status badge -->
+  <div class="status-badge" title="Deployed on Amplify + Lambda">
+    <span>🚀</span> Deployed on <strong>AWS Amplify</strong> + <strong>Lambda</strong>
   </div>
+
+  <!-- Geo chip (auto shows when it resolves) -->
+  <div id="geo-hello" class="geo-chip" hidden>Hello from 🌎</div>
 
   <!-- Hero -->
   <header class="hero-card">
     <img src="profile-phote.jpg" alt="Mike profile photo" class="profile-photo"/>
     <h1>Michael Ramirez</h1>
     <p class="tagline">Junior Cloud Architect from the Big Apple 🗽🍎</p>
-    <a class="btn"
-       href="https://builder.aws/community/@mikear815"
-       target="_blank" rel="noopener">Builder Profile ↗</a>
+    <a class="btn" href="https://builder.aws/community/@mikear815" target="_blank" rel="noopener">Builder Profile ↗</a>
   </header>
 
   <main>
-    <!-- About Me -->
+    <!-- About -->
     <section id="about">
       <h2>About Me</h2>
       <div class="card card-wide pulse-slow">
@@ -51,20 +48,56 @@
     <section id="facts">
       <h2>Fun Facts About Me</h2>
       <div class="cards">
-        <div class="card">🧑‍🍳 I love experimenting in the kitchen</div>
-        <div class="card">🎨 DIY airbrush & model lighting projects</div>
-        <div class="card">👾 Retro SNES gamer forever</div>
+        <!-- LEFT: link to Challenge #2 (star emoji) -->
+        <div class="card">
+          <a class="fact-link" href="https://builder.aws.com/content/31C2WxIDSQive7q2Dv5xNFCmYJj/aws-builder-challenge-2-build-a-website-on-the-cloud" target="_blank" rel="noopener">
+            <div class="fact-title">⭐ Challenge In Progress</div>
+            <div class="fact-body">
+              Currently working on <span class="underline">AWS Builder Challenge #2</span> — Build a website on the cloud!
+            </div>
+          </a>
+        </div>
+
+        <!-- MIDDLE: Mini gallery (2x2) with lightbox -->
+        <div class="card">
+          <div class="fact-title">🛠️ DIY Gallery (LED + Airbrush)</div>
+          <div id="build-gallery" class="gallery-grid">
+            <!-- Show the first four; keep the rest hidden for the lightbox navigation -->
+            <!-- Use the media you uploaded to /media -->
+            <button class="gallery-item" data-type="img"   data-src="media/image1.jpeg" style="--bg:url('media/image1.jpeg')"></button>
+            <button class="gallery-item video" data-type="video" data-src="media/vid1.mp4" data-poster="media/image2.jpeg" style="--bg:url('media/image2.jpeg')"></button>
+            <button class="gallery-item" data-type="img"   data-src="media/image3.jpeg" style="--bg:url('media/image3.jpeg')"></button>
+            <button class="gallery-item video" data-type="video" data-src="media/vid2.mp4" data-poster="media/image4.jpeg" style="--bg:url('media/image4.jpeg')"></button>
+
+            <!-- Hidden (for lightbox nav only) -->
+            <button class="gallery-item hidden" data-type="img"   data-src="media/image4.jpeg"></button>
+            <button class="gallery-item hidden" data-type="img"   data-src="media/image5.jpeg"></button>
+            <button class="gallery-item hidden" data-type="video" data-src="media/vid3.mp4" data-poster="media/image5.jpeg"></button>
+          </div>
+          <p class="gallery-note">Click a tile to expand. Videos play in the lightbox.</p>
+        </div>
+
+        <!-- RIGHT: link to Challenge #1 repo -->
+        <div class="card">
+          <div class="fact-title">💡 Fun Project</div>
+          <div class="fact-body">
+            This site is hosted on AWS and wired with a serverless contact form.
+            <br/><br/>
+            <a class="inline-link" href="https://github.com/archtestmike/qommander" target="_blank" rel="noopener">
+              AWS Builder Challenge #1 ↗
+            </a>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Find me online -->
+    <!-- Find me -->
     <section id="social">
       <h2>Find Me Online</h2>
       <div class="cards">
         <div class="card glow-card">
           <a class="social-link" href="https://www.linkedin.com/in/ramirezmichael1/" target="_blank" rel="noopener">
             <span class="social-icon" aria-hidden="true">
-              <!-- LinkedIn SVG -->
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
                 <path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.5 8h4v16h-4zM8 8h3.8v2.2h.1c.5-.9 1.8-2.2 3.8-2.2 4.1 0 4.9 2.7 4.9 6.1V24h-4v-7.1c0-1.7 0-3.8-2.3-3.8s-2.6 1.8-2.6 3.7V24H8z"/>
               </svg>
@@ -75,7 +108,6 @@
         <div class="card glow-card">
           <a class="social-link" href="https://github.com/archtestmike" target="_blank" rel="noopener">
             <span class="social-icon" aria-hidden="true">
-              <!-- GitHub SVG -->
               <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
                 <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.2.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 .1.7 1.7 2.9 1.2.1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.4-5.5-6.2 0-1.4.5-2.6 1.2-3.5-.1-.3-.5-1.7.1-3.5 0 0 1-.3 3.6 1.2a12.4 12.4 0 0 1 6.6 0c2.5-1.5 3.5-1.2 3.5-1.2.7 1.8.3 3.2.1 3.5.8.9 1.2 2.1 1.2 3.5 0 4.8-2.9 5.8-5.6 6.1.4.3.8 1 .8 2.1v3.1c0 .4.2.7.8.6A12 12 0 0 0 12 .5z"/>
               </svg>
@@ -91,8 +123,8 @@
       <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
         <form id="contact-form" class="contact-form" novalidate>
-          <input type="text" name="name" placeholder="Your Name" required />
-          <input type="email" name="email" placeholder="Your Email" required />
+          <input type="text" name="name" placeholder="Your Name" required/>
+          <input type="email" name="email" placeholder="Your Email" required/>
           <textarea name="message" placeholder="Your Message" required></textarea>
           <button type="submit" class="btn btn-block">Send</button>
         </form>
@@ -105,6 +137,14 @@
     <p>© <span id="year"></span> Michael Ramirez — Built for the AWS Builder Challenge</p>
   </footer>
 
-  <script src="app.js?v=13"></script>
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button class="lb-close" aria-label="Close">×</button>
+    <button class="lb-nav lb-prev" aria-label="Previous">‹</button>
+    <figure class="lb-stage"><!-- JS injects <img> or <video> here --></figure>
+    <button class="lb-nav lb-next" aria-label="Next">›</button>
+  </div>
+
+  <script src="app.js?v=10"></script>
 </body>
 </html>
