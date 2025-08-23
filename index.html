@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
 
-  <link rel="stylesheet" href="styles.css?v=26"/>
+  <link rel="stylesheet" href="styles.css?v=27"/>
 
   <!-- Perf hints -->
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
-  <!-- PRECONNECT to your CONTACT lambda (not the country one) -->
-  <link rel="preconnect" href="https://uxgn2qacgiqc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws">
+  <!-- PRECONNECT to the CONTACT Lambda (exact URL from the console) -->
+  <link rel="preconnect" href="https://uxgn2qacgjc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws">
 </head>
 <body>
   <!-- Scroll progress -->
@@ -121,10 +121,9 @@
     <section id="contact">
       <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
-        <!-- EXACT contact Lambda URL. Optionally set data-lambda2 to a 2nd URL. -->
+        <!-- EXACT contact Lambda URL from the console -->
         <form id="contact-form" class="contact-form" novalidate
-              data-lambda="https://uxgn2qacgiqc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws/"
-              data-lambda2="">
+              data-lambda="https://uxgn2qacgjc7pqg3mvwhg2duq0nkoir.lambda-url.us-east-1.on.aws/">
           <input type="text" name="name" placeholder="Your Name" required/>
           <input type="email" name="email" placeholder="Your Email" required/>
           <textarea name="message" placeholder="Your Message" required></textarea>
@@ -147,6 +146,6 @@
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
-  <script src="app.js?v=26" defer></script>
+  <script src="app.js?v=27" defer></script>
 </body>
 </html>
