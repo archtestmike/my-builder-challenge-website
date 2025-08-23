@@ -130,9 +130,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form (Lambda submit; unchanged) ===== */
+/* ===== Contact form (Lambda submit) ===== */
 (() => {
-  // Your working Function URL:
+  // Your working Function URL (unchanged):
   const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
@@ -172,7 +172,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const chip = document.getElementById('geo-hello');
   if (!chip) return;
 
-  // Cache for 24h to avoid hitting the API on every visit
   const CACHE_KEY = 'geo_cc';
   const CACHE_AT = 'geo_cc_at';
   const now = Date.now();
@@ -191,7 +190,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
     chip.classList.add('show');
   }
 
-  // 1) Use cache if fresh
   try{
     const cached = localStorage.getItem(CACHE_KEY);
     const at = parseInt(localStorage.getItem(CACHE_AT) || '0', 10);
@@ -201,7 +199,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
     }
   }catch{}
 
-  // 2) Call ipapi.co (supports CORS)
   (async ()=>{
     try{
       const r = await fetch('https://ipapi.co/json/', { cache: 'no-store', mode: 'cors' });
@@ -215,7 +212,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       }catch{}
       show(cc);
     }catch{
-      // Stay hidden on failure
+      /* stay hidden on failure */
     }
   })();
 })();
