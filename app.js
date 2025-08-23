@@ -203,22 +203,22 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox (with video cleanup & smooth nav) ===== */
+/* ===== Mini Gallery Lightbox (stable video/image nav) ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
   if (!root || !lb) return;
 
-  const stage   = lb.querySelector('.lb-stage');
-  const btnClose= lb.querySelector('.lb-close');
-  const btnPrev = lb.querySelector('.lb-prev');
-  const btnNext = lb.querySelector('.lb-next');
+  const stage    = lb.querySelector('.lb-stage');
+  const btnClose = lb.querySelector('.lb-close');
+  const btnPrev  = lb.querySelector('.lb-prev');
+  const btnNext  = lb.querySelector('.lb-next');
 
   const items = Array.from(root.querySelectorAll('.gallery-item'));
   let idx = -1;
+  let renderToken = 0;
 
   function cleanupStage(){
-    // Pause and fully release previous video to avoid flicker/jank
     const vid = stage.querySelector('video');
     if (vid) {
       try { vid.pause(); } catch {}
@@ -237,6 +237,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   }
 
   function render(i){
+    const token = ++renderToken;
     const it = items[i];
     if (!it) return;
 
@@ -246,14 +247,16 @@ document.getElementById('year').textContent = new Date().getFullYear();
       const v = document.createElement('video');
       v.controls = true;
       v.preload  = 'metadata';
-      v.muted    = true;        // improves autoplay reliability
+      v.muted = true;
       v.playsInline = true;
       if (it.dataset.poster) v.poster = it.dataset.poster;
       v.src = it.dataset.src;
       stage.appendChild(v);
 
-      // Start playback once it's ready; ignore autoplay blocks
-      const tryPlay = () => v.play().catch(()=>{});
+      const tryPlay = () => {
+        if (token !== renderToken) return; // stale render, abort
+        v.play().catch(()=>{});
+      };
       v.addEventListener('canplay', tryPlay, { once: true });
     } else {
       const img = new Image();
@@ -272,7 +275,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
     render(idx);
     lb.classList.add('open');
     lb.setAttribute('aria-hidden','false');
-    // Prevent background page scroll while lightbox is open
     document.body.style.overflow = 'hidden';
   }
 
