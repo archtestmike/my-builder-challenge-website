@@ -24,9 +24,10 @@
 
   <!-- Hero -->
   <header class="hero-card">
+    <!-- Note: if your actual file is named with a typo (profile-phote.jpg), keep it; otherwise correct to profile-photo.jpg -->
     <img src="profile-phote.jpg" alt="Mike profile photo" class="profile-photo"/>
     <h1>Michael Ramirez</h1>
-    <p class="tagline">Junior Cloud Architect from the Big Apple 🗽🍎</p>
+    <p class="tagline">Aspiring Cloud Architect from the Big Apple 🗽🍎</p>
     <a class="btn" href="https://builder.aws/community/@mikear815" target="_blank" rel="noopener">Builder Profile ↗</a>
   </header>
 
@@ -36,10 +37,8 @@
       <h2>About Me</h2>
       <div class="card card-wide pulse-slow">
         <p>
-          Cloud enthusiast 🚀 and lifelong learner ☁️.
-          I like keeping things simple, building reliable serverless stacks, and shipping fast.
-          When I’m not in the cloud, I’m tinkering with DIY builds, airbrush painting 🎨,
-          and retro SNES classics 🎮.
+          <strong>Hi 👋 my name is Mike…</strong>
+          I love helping people—through volunteering, community events, and simply showing up. I share my hobbies and art to connect and spark creativity, and I’m a huge SNES retro gamer 🎮. Professionally, I’m all-in on AWS—building practical, scalable cloud solutions that empower people and organizations.
         </p>
       </div>
     </section>
@@ -63,7 +62,6 @@
           <div class="fact-title">🛠️ DIY Gallery (LED + Airbrush)</div>
           <div id="build-gallery" class="gallery-grid">
             <!-- Show the first four; keep the rest hidden for the lightbox navigation -->
-            <!-- Use the media you uploaded to /media -->
             <button class="gallery-item" data-type="img"   data-src="media/image1.jpeg" style="--bg:url('media/image1.jpeg')"></button>
             <button class="gallery-item video" data-type="video" data-src="media/vid1.mp4" data-poster="media/image2.jpeg" style="--bg:url('media/image2.jpeg')"></button>
             <button class="gallery-item" data-type="img"   data-src="media/image3.jpeg" style="--bg:url('media/image3.jpeg')"></button>
@@ -134,7 +132,7 @@
   </main>
 
   <footer>
-    <p>© <span id="year"></span> Michael Ramirez — Built for the AWS Builder Challenge</p>
+    <p>© <span id="year"></span> Michael Ramirez — Built with ❤️‍🔥 on AWS</p>
   </footer>
 
   <!-- Lightbox -->
@@ -145,6 +143,6 @@
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=10" defer></script>
 </body>
 </html>
