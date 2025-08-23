@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
-  <link rel="stylesheet" href="styles.css?v=20"/>
+  <link rel="stylesheet" href="styles.css?v=23"/>
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
   <link rel="preconnect" href="https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws">
@@ -117,7 +117,8 @@
     <section id="contact">
       <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
-        <form id="contact-form" class="contact-form" novalidate>
+        <!-- SET YOUR EMAIL HERE for fallback -->
+        <form id="contact-form" class="contact-form" novalidate data-fallback-email="YOUR_EMAIL_HERE">
           <input type="text" name="name" placeholder="Your Name" required/>
           <input type="email" name="email" placeholder="Your Email" required/>
           <textarea name="message" placeholder="Your Message" required></textarea>
@@ -140,6 +141,6 @@
     <button class="lb-nav lb-next" aria-label="Next">›</button>
   </div>
 
-  <script src="app.js?v=20" defer></script>
+  <script src="app.js?v=23" defer></script>
 </body>
 </html>
