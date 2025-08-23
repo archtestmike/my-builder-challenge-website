@@ -1,5 +1,8 @@
 /* ===== Footer Year ===== */
-document.getElementById('year').textContent = new Date().getFullYear();
+document.addEventListener('DOMContentLoaded', () => {
+  const y = document.getElementById('year');
+  if (y) y.textContent = new Date().getFullYear();
+});
 
 /* ===== Scroll progress ===== */
 (() => {
@@ -14,7 +17,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   onScroll();
 })();
 
-/* ===== Digital Rain (slightly slower) ===== */
+/* ===== Digital Rain (calm) ===== */
 (() => {
   const canvas = document.getElementById('digital-rain');
   if (!canvas) return;
@@ -126,105 +129,61 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
-/* ===== Contact form (Lambda 1 → Lambda 2 → FormSubmit → mailto) ===== */
+/* ===== Contact form → Contact Lambda (SNS) ===== */
 (() => {
-  const form = document.getElementById('contact-form');
+  const form   = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  const LAMBDA1 = (form.dataset.lambda1 || "").trim();
-  const LAMBDA2 = (form.dataset.lambda2 || "").trim();
-  const FALLBACK_EMAIL = (form.dataset.fallbackEmail || "").trim();
-  const FORM_SUBMIT_ENDPOINT = FALLBACK_EMAIL
-    ? `https://formsubmit.co/ajax/${encodeURIComponent(FALLBACK_EMAIL)}`
-    : "";
+  const LAMBDA_URL = (form.dataset.lambda || "").trim();  // contact-form-function URL
 
   const btn = form.querySelector('button[type="submit"]');
   const setStatus = (msg) => { status.textContent = msg; status.style.opacity = '0.95'; };
-
-  async function postJSON(url, payload, signal){
-    return fetch(url, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-      body: JSON.stringify(payload),
-      mode:'cors',
-      cache:'no-store',
-      signal
-    });
-  }
-
-  function openMailto(payload){
-    if (!FALLBACK_EMAIL) return;
-    const mailto = `mailto:${FALLBACK_EMAIL}?subject=${encodeURIComponent('Website contact from ' + payload.name)}&body=${encodeURIComponent(payload.message + '\n\n— ' + payload.name + ' <' + payload.email + '>')}`;
-    window.location.href = mailto;
-  }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const fd = new FormData(form);
     const payload = {
-      name: (fd.get('name') || '').toString().trim(),
-      email: (fd.get('email') || '').toString().trim(),
-      message: (fd.get('message') || '').toString().trim(),
-      ts: new Date().toISOString(),
-      ua: navigator.userAgent
+      name:    (fd.get('name') || '').toString().trim(),
+      email:   (fd.get('email') || '').toString().trim(),
+      message: (fd.get('message') || '').toString().trim()
     };
+
+    if (!payload.name || !payload.email || !payload.message){
+      setStatus('Please fill out all fields.');
+      return;
+    }
 
     setStatus('Sending…');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; }
 
-    const ctrl = new AbortController();
-    const timer = setTimeout(()=>ctrl.abort(), 10000);
-
     try{
-      if (LAMBDA1){
-        const r1 = await postJSON(LAMBDA1, payload, ctrl.signal);
-        if (r1.ok){ setStatus('Thanks! I’ll get back to you soon.'); form.reset(); return; }
+      const res = await fetch(LAMBDA_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' }, // JSON for Lambda + Function URL CORS
+        body: JSON.stringify(payload),
+        mode:'cors',
+        cache:'no-store'
+      });
+
+      if (res.ok){
+        setStatus('Thanks! I’ll get back to you soon.');
+        form.reset();
+      } else {
+        const txt = await res.text().catch(()=> '');
+        setStatus('Send failed. Please try again.');
+        console.warn('Lambda error:', res.status, txt);
       }
-      if (LAMBDA2){
-        const r2 = await postJSON(LAMBDA2, payload, ctrl.signal);
-        if (r2.ok){ setStatus('Thanks! I’ll get back to you soon.'); form.reset(); return; }
-      }
-      if (FORM_SUBMIT_ENDPOINT){
-        const r3 = await fetch(FORM_SUBMIT_ENDPOINT, {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-          body: JSON.stringify({ ...payload, _subject:'New message from your website', _replyto: payload.email }),
-          mode:'cors',
-          cache:'no-store',
-          signal: ctrl.signal
-        });
-        if (r3.ok){ setStatus('Thanks! Your message was emailed.'); form.reset(); return; }
-      }
-      openMailto(payload);
-      setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
-    }catch{
-      try{
-        if (FORM_SUBMIT_ENDPOINT){
-          const r = await fetch(FORM_SUBMIT_ENDPOINT, {
-            method:'POST',
-            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-            body: JSON.stringify({ ...payload, _subject:'New message from your website', _replyto: payload.email }),
-            mode:'cors',
-            cache:'no-store',
-            signal: ctrl.signal
-          });
-          if (r.ok){ setStatus('Thanks! Your message was emailed.'); form.reset(); return; }
-        }
-        openMailto(payload);
-        setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
-      }catch{
-        openMailto(payload);
-        setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
-      }
-    } finally{
-      clearTimeout(timer);
+    }catch(err){
+      setStatus('Network error. Please try again.');
+      console.warn('Fetch error:', err);
+    }finally{
       if (btn) { btn.disabled = false; btn.style.opacity = ''; }
     }
   });
 })();
 
-/* ===== Visitor Geo Hello ===== */
+/* ===== Visitor Geo Hello (uses CloudFront cookie first) ===== */
 (() => {
   const chip = document.getElementById('geo-hello');
   if (!chip) return;
@@ -241,9 +200,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       const r = await fetch('https://ipapi.co/json/', {cache:'no-store'});
       const j = await r.json();
       return (j && j.country) || '';
-    }catch{
-      return '';
-    }
+    }catch{ return ''; }
   }
 
   const flag = (cc) => {
@@ -261,7 +218,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox (stable) ===== */
+/* ===== Mini Gallery Lightbox ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
@@ -343,14 +300,14 @@ document.getElementById('year').textContent = new Date().getFullYear();
   }
 
   function next(){ idx = (idx + 1) % items.length; render(idx); }
-  function prev(){ idx = (idx - 1 + items.length) % items.length; render(idx); }
+  function prev(){ idx = (idx - 1 + items.length) % items.length; }
 
   items.forEach((el, i) => el.addEventListener('click', () => open(i)));
   btnClose.addEventListener('click', close);
   btnNext.addEventListener('click', next);
   btnPrev.addEventListener('click', prev);
 
-  // simple focus trap
+  // focus trap
   lb.addEventListener('keydown', e=>{
     if(e.key!=='Tab') return;
     const focusables=[btnClose,btnPrev,btnNext];
