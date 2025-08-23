@@ -226,3 +226,16 @@ footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
   #progress-bar{ animation:none }
   .pulse-slow, .glow-card, .status-badge, .geo-chip{ animation:none }
 }
+
+/* ===== About readability (keeps aesthetics) ===== */
+#about .card-wide p{
+  max-width: 68ch;
+  margin: 0 auto;
+  text-align: left;
+  line-height: 1.6;
+  letter-spacing: 0.2px;
+}
+#about h2{ text-wrap: balance; }
+@media (max-width: 600px){
+  #about .card-wide p{ font-size: 0.95rem; }
+}
