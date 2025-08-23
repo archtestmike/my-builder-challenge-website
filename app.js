@@ -1,4 +1,4 @@
-/* ===== Footer Year ===== */
+// Footer year
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Scroll progress ===== */
@@ -89,21 +89,21 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const btn = form.querySelector('button[type="submit"]');
   const say = (m) => { status.textContent = m; status.style.opacity = '0.95'; };
 
-  // POST with text/plain to avoid preflight; Lambda reads JSON from event.body
-  const postPlain = (url, bodyStr, signal) => fetch(url, {
+  // POST JSON; Function URL CORS handles preflight because "content-type" is allowed.
+  const postJSON = (url, obj, signal) => fetch(url, {
     method : 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body   : bodyStr,
+    headers: { 'Content-Type': 'application/json' },
+    body   : JSON.stringify(obj),
     mode   : 'cors',
     cache  : 'no-store',
     signal
   });
 
-  // Fallback with application/json (in case text/plain gets rejected by a proxy)
-  const postJSON = (url, obj, signal) => fetch(url, {
+  // Fallback to text/plain JSON string (rare proxies)
+  const postPlain = (url, bodyStr, signal) => fetch(url, {
     method : 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body   : JSON.stringify(obj),
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body   : bodyStr,
     mode   : 'cors',
     cache  : 'no-store',
     signal
@@ -120,41 +120,29 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (!payload.name || !payload.email || !payload.message){
       say('Please fill out all fields.'); return;
     }
-    const bodyStr = JSON.stringify(payload);
-
     say('Sending…');
     if (btn){ btn.disabled = true; btn.style.opacity = '0.8'; }
 
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000); // 15s safety
+    const timer = setTimeout(() => ctrl.abort(), 15000);
 
     try {
-      let ok = false;
-      // Try text/plain (simple request, no preflight)
-      try {
-        const r1 = await postPlain(LAMBDA_URL, bodyStr, ctrl.signal);
-        ok = r1 && r1.ok;
-        if (!ok) console.warn('Lambda returned non-OK to text/plain:', r1 && r1.status);
-      } catch (err) {
-        console.warn('text/plain fetch failed:', err);
-      }
-      // Fallback: application/json
-      if (!ok) {
-        try {
-          const r2 = await postJSON(LAMBDA_URL, payload, ctrl.signal);
-          ok = r2 && r2.ok;
-          if (!ok) console.warn('Lambda returned non-OK to JSON:', r2 && r2.status);
-        } catch (err) {
-          console.warn('JSON fetch failed:', err);
-        }
+      // Try JSON first
+      let r = await postJSON(LAMBDA_URL, payload, ctrl.signal);
+      if (!r.ok) {
+        // Fallback: text/plain with JSON string
+        r = await postPlain(LAMBDA_URL, JSON.stringify(payload), ctrl.signal);
       }
 
-      if (ok){
+      if (r.ok){
         say('Thanks! I’ll get back to you soon.');
         form.reset();
       } else {
         say('Network error. Please try again.');
       }
+    } catch (err) {
+      console.warn('Submit failed:', err);
+      say('Network error. Please try again.');
     } finally {
       clearTimeout(timer);
       if (btn){ btn.disabled = false; btn.style.opacity = ''; }
@@ -162,7 +150,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
 })();
 
-/* ===== Geo Hello (unchanged) ===== */
+/* ===== Geo Hello ===== */
 (() => {
   const chip = document.getElementById('geo-hello'); if (!chip) return;
   const readCookie = (k) => {
@@ -191,7 +179,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox (unchanged) ===== */
+/* ===== Mini Gallery Lightbox ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
