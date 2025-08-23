@@ -38,7 +38,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Starfield (with reliable shooting stars) ===== */
+/* ===== Starfield (bigger, brighter shooting stars) ===== */
 (() => {
   const canvas = document.getElementById('starfield'); if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -47,8 +47,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
   let shooters = [];
   let lastT = 0, lastSpawn = 0;
   const STAR_COUNT = 220;
-  const MIN_GAP = 3500;   // min ms between shooting stars
-  const MAX_GAP = 7000;   // max ms between shooting stars
+  const MIN_GAP = 3500;           // min ms between shooting stars
+  const MAX_GAP = 7000;           // max ms between shooting stars
   let nextGap = rand(MIN_GAP, MAX_GAP);
 
   function rand(a, b){ return a + Math.random() * (b - a); }
@@ -73,11 +73,18 @@ document.getElementById('year').textContent = new Date().getFullYear();
   setSize();
 
   function spawn() {
-    // start from upper-right quadrant, travel down-left
-    const x = W * (0.6 + Math.random() * 0.4);
+    // start high-right, travel down-left
+    const x = W * (0.65 + Math.random() * 0.35);
     const y = H * (Math.random() * 0.35);
-    const speed = (0.6 + Math.random() * 0.6) * DPR; // px per frame
-    shooters.push({ x, y, vx: -8 * speed, vy: 3 * speed, life: 1, width: 2 * DPR });
+    const speed = (0.9 + Math.random() * 0.7) * DPR; // a bit faster
+    shooters.push({
+      x, y,
+      vx: -9 * speed,
+      vy:  3.6 * speed,
+      life: 1,
+      width: 4.5 * DPR,            // thicker tail
+      headR: 3.6 * DPR             // brighter head (retina-friendly)
+    });
     lastSpawn = lastT;
     nextGap = rand(MIN_GAP, MAX_GAP);
   }
@@ -108,25 +115,46 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (ts - lastSpawn > nextGap && shooters.length < 1) spawn();
 
     // Shooting stars
-    ctx.lineCap = 'round';
     for (let i = shooters.length - 1; i >= 0; i--) {
       const sh = shooters[i];
       sh.x += sh.vx;
       sh.y += sh.vy;
-      sh.life -= 0.02;
+      sh.life -= 0.012; // slower fade so it stays visible longer
 
-      const g = ctx.createLinearGradient(sh.x, sh.y, sh.x - sh.vx * 0.6, sh.y - sh.vy * 0.6);
-      g.addColorStop(0, 'rgba(255,255,255,1)');
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.strokeStyle = g;
+      // Tail — additive blend + cyan glow
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.shadowBlur = 12 * DPR;
+      ctx.shadowColor = 'rgba(0,255,255,0.55)';
+
+      const tailLen = 1.0; // longer tail
+      const grad = ctx.createLinearGradient(
+        sh.x, sh.y,
+        sh.x - sh.vx * tailLen, sh.y - sh.vy * tailLen
+      );
+      grad.addColorStop(0.0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.4, 'rgba(160,245,255,0.9)');
+      grad.addColorStop(1.0, 'rgba(0,255,255,0)');
+
+      ctx.strokeStyle = grad;
       ctx.lineWidth = sh.width;
-
+      ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(sh.x, sh.y);
-      ctx.lineTo(sh.x - sh.vx * 0.6, sh.y - sh.vy * 0.6);
+      ctx.lineTo(sh.x - sh.vx * tailLen, sh.y - sh.vy * tailLen);
       ctx.stroke();
 
-      if (sh.life <= 0 || sh.x < -60 * DPR || sh.y > H + 60 * DPR) shooters.splice(i, 1);
+      // Bright head
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath();
+      ctx.arc(sh.x, sh.y, sh.headR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      if (sh.life <= 0 || sh.x < -80 * DPR || sh.y > H + 80 * DPR) {
+        shooters.splice(i, 1);
+      }
     }
 
     requestAnimationFrame(draw);
@@ -143,7 +171,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  const LAMBDA_URL = (form.dataset.lambda || '').trim(); // exact Function URL from data-lambda
+  const LAMBDA_URL = (form.dataset.lambda || '').trim(); // exact Function URL
   const btn = form.querySelector('button[type="submit"]');
   const say = (m) => { status.textContent = m; status.style.opacity = '0.95'; };
 
@@ -220,7 +248,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   });
 })();
 
-/* ===== Geo Hello ===== */
+/* ===== Geo Hello (unchanged) ===== */
 (() => {
   const chip = document.getElementById('geo-hello'); if (!chip) return;
   const readCookie = (k) => {
@@ -249,7 +277,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox ===== */
+/* ===== Mini Gallery Lightbox (unchanged) ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
