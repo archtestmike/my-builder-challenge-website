@@ -138,7 +138,7 @@ h2{ margin:0 0 18px }
 }
 .card:hover{ transform:translateY(-6px); background:rgba(0,255,255,0.06); box-shadow:0 8px 28px rgba(0,255,255,0.25) }
 
-/* Soft glow/pulse for feature cards (middle row + about) */
+/* Soft glow/pulse for feature cards */
 .glow-soft{
   animation:softPulse 6s ease-in-out infinite;
   box-shadow:0 6px 24px rgba(0,0,0,0.45), 0 0 14px rgba(0,255,255,0.08);
@@ -261,12 +261,12 @@ footer p{ margin:0; letter-spacing:.15px }
 
 /* ===== About Me harmonized ===== */
 #about .about-card{
-  max-width:900px;                /* wider so shoulders don’t feel empty */
+  max-width:900px;
   margin:0 auto;
   position:relative;
-  background:rgba(0,0,0,0.55);    /* match hero background */
+  background:rgba(0,0,0,0.55);
   border:1px solid var(--card-border);
-  border-radius:18px;              /* match hero radius */
+  border-radius:18px;
   box-shadow:0 0 26px var(--card-shadow);
   backdrop-filter:blur(6px);
 }
