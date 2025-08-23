@@ -126,15 +126,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
-/* ===== Contact form (Lambda → FormSubmit → mailto) ===== */
+/* ===== Contact form (Lambda 1 → Lambda 2 → FormSubmit → mailto) ===== */
 (() => {
-  const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
-
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  // read fallback email from HTML to avoid editing JS again
+  // read config from HTML data-attributes (so you don't edit JS next time)
+  const LAMBDA1 = (form.dataset.lambda1 || "").trim();
+  const LAMBDA2 = (form.dataset.lambda2 || "").trim();
   const FALLBACK_EMAIL = (form.dataset.fallbackEmail || "").trim();
   const FORM_SUBMIT_ENDPOINT = FALLBACK_EMAIL
     ? `https://formsubmit.co/ajax/${encodeURIComponent(FALLBACK_EMAIL)}`
@@ -143,27 +143,13 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const btn = form.querySelector('button[type="submit"]');
   const setStatus = (msg) => { status.textContent = msg; status.style.opacity = '0.95'; };
 
-  async function tryLambda(bodyStr, signal){
-    return fetch(LAMBDA_URL, {
+  // Use text/plain to avoid CORS preflight if your Function URL doesn't handle OPTIONS
+  function postPlain(url, body, signal){
+    return fetch(url, {
       method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: bodyStr,
-      cache:'no-store',
+      headers:{ 'Content-Type':'text/plain;charset=UTF-8' },
+      body,
       mode:'cors',
-      signal
-    });
-  }
-
-  async function tryFormSubmit(payload, signal){
-    if (!FORM_SUBMIT_ENDPOINT) throw new Error('No fallback email set');
-    return fetch(FORM_SUBMIT_ENDPOINT, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
-      body: JSON.stringify({
-        ...payload,
-        _subject: 'New message from your website',
-        _replyto: payload.email
-      }),
       cache:'no-store',
       signal
     });
@@ -181,7 +167,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const payload = {
       name: (fd.get('name') || '').toString().trim(),
       email: (fd.get('email') || '').toString().trim(),
-      message: (fd.get('message') || '').toString().trim()
+      message: (fd.get('message') || '').toString().trim(),
+      ts: new Date().toISOString(),
+      ua: navigator.userAgent
     };
     const bodyStr = JSON.stringify(payload);
 
@@ -192,37 +180,73 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const timer = setTimeout(()=>ctrl.abort(), 10000);
 
     try{
-      let res = await tryLambda(bodyStr, ctrl.signal);
-      if (res && res.ok){
-        setStatus('Thanks! I’ll get back to you soon.');
-        form.reset();
-      } else {
-        const r2 = await tryFormSubmit(payload, ctrl.signal);
-        if (r2 && r2.ok){
-          setStatus('Thanks! Your message was emailed.');
+      // Try Lambda #1
+      if (LAMBDA1){
+        const r1 = await postPlain(LAMBDA1, bodyStr, ctrl.signal);
+        if (r1 && r1.ok){
+          setStatus('Thanks! I’ll get back to you soon.');
           form.reset();
-        } else {
-          openMailto(payload);
-          setStatus('Opening your email app so you can send this message…');
+          return;
         }
       }
-    } catch(err){
-      try{
-        const r2 = await tryFormSubmit(payload, ctrl.signal);
+      // Try Lambda #2
+      if (LAMBDA2){
+        const r2 = await postPlain(LAMBDA2, bodyStr, ctrl.signal);
         if (r2 && r2.ok){
+          setStatus('Thanks! I’ll get back to you soon.');
+          form.reset();
+          return;
+        }
+      }
+      // Try FormSubmit emailer
+      if (FORM_SUBMIT_ENDPOINT){
+        const r3 = await fetch(FORM_SUBMIT_ENDPOINT, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+          body: JSON.stringify({
+            ...payload,
+            _subject: 'New message from your website',
+            _replyto: payload.email
+          }),
+          mode:'cors',
+          cache:'no-store',
+          signal: ctrl.signal
+        });
+        if (r3 && r3.ok){
           setStatus('Thanks! Your message was emailed.');
           form.reset();
-        } else {
-          openMailto(payload);
-          setStatus('Opening your email app so you can send this message…');
+          return;
         }
+      }
+      // Last resort: mailto
+      openMailto(payload);
+      setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
+    }catch(err){
+      try{
+        if (FORM_SUBMIT_ENDPOINT){
+          const r = await fetch(FORM_SUBMIT_ENDPOINT, {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+            body: JSON.stringify({
+              ...payload,
+              _subject: 'New message from your website',
+              _replyto: payload.email
+            }),
+            mode:'cors',
+            cache:'no-store',
+            signal: ctrl.signal
+          });
+          if (r && r.ok){
+            setStatus('Thanks! Your message was emailed.');
+            form.reset();
+            return;
+          }
+        }
+        openMailto(payload);
+        setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
       }catch{
         openMailto(payload);
-        if (FALLBACK_EMAIL){
-          setStatus('Opening your email app so you can send this message…');
-        }else{
-          setStatus('Couldn’t send. Set your email in the form’s data-fallback-email attribute.');
-        }
+        setStatus(FALLBACK_EMAIL ? 'Opening your email app so you can send this message…' : 'Couldn’t send. Set your email in data-fallback-email.');
       }
     } finally{
       clearTimeout(timer);
