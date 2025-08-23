@@ -130,9 +130,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Contact form (Lambda submit with graceful fallback) ===== */
+/* ===== Contact form (Lambda submit; unchanged) ===== */
 (() => {
-  // Keep your WORKING Function URL here (unchanged)
+  // Your working Function URL:
   const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
@@ -152,17 +152,13 @@ document.getElementById('year').textContent = new Date().getFullYear();
     status.style.opacity = '0.9';
 
     try{
-      if (LAMBDA_URL){
-        const res = await fetch(LAMBDA_URL, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(payload),
-          mode: 'cors'
-        });
-        if (!res.ok) throw new Error('Bad response');
-      }else{
-        await new Promise(r => setTimeout(r, 700)); // local fallback
-      }
+      const res = await fetch(LAMBDA_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+        mode: 'cors'
+      });
+      if (!res.ok) throw new Error('Bad response');
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
@@ -173,48 +169,53 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
 /* ===== Visitor Geo Hello (ipapi.co) ===== */
 (() => {
-  // We’ll detect country client-side (no preflight, no backend).
-  const chip = document.getElementById('geo-hello') || document.getElementById('geo-chip');
+  const chip = document.getElementById('geo-hello');
   if (!chip) return;
 
-  const getCookie = (k) => {
-    const m = document.cookie.match(new RegExp('(?:^|; )' + k.replace(/[-[\\]{}()*+?.,\\\\^$|#\\s]/g,'\\$&') + '=([^;]*)'));
-    return m ? decodeURIComponent(m[1]) : '';
-  };
-  const setCookie = (k, v, days=30) => {
-    const exp = new Date(Date.now() + days*864e5).toUTCString();
-    document.cookie = `${k}=${encodeURIComponent(v)}; Path=/; Expires=${exp}; SameSite=Lax`;
-  };
-  const flag = (cc) => {
+  // Cache for 24h to avoid hitting the API on every visit
+  const CACHE_KEY = 'geo_cc';
+  const CACHE_AT = 'geo_cc_at';
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  function flag(cc){
     if (!cc || cc.length !== 2) return '';
     const A = 0x1F1E6, base = 'A'.charCodeAt(0);
     const up = cc.toUpperCase();
     return String.fromCodePoint(A + (up.charCodeAt(0)-base), A + (up.charCodeAt(1)-base));
-  };
-
-  async function resolveCountry(){
-    // 1) Cookie / CloudFront header if present
-    let cc = getCookie('gb_ctry') || getCookie('CloudFront-Viewer-Country');
-    if (cc) return cc;
-
-    // 2) Public IP geo (simple GET, no custom headers -> no preflight)
-    try{
-      const r = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
-      if (r.ok){
-        const j = await r.json();
-        cc = j.country_code || j.country || ''; // ipapi: country_code = "US"
-        if (cc && cc.length > 2) cc = cc.slice(0,2);
-        if (cc) setCookie('gb_ctry', cc);
-      }
-    }catch{}
-    return cc || '';
   }
 
-  (async () => {
-    const cc = await resolveCountry();
-    if (!cc) return;
-    chip.textContent = `Hello from ${flag(cc)} ${cc.toUpperCase()}`;
+  async function show(cc){
+    chip.textContent = `Hello from ${flag(cc)} ${cc}`;
     chip.hidden = false;
     chip.classList.add('show');
+  }
+
+  // 1) Use cache if fresh
+  try{
+    const cached = localStorage.getItem(CACHE_KEY);
+    const at = parseInt(localStorage.getItem(CACHE_AT) || '0', 10);
+    if (cached && at && (now - at) < dayMs){
+      show(cached);
+      return;
+    }
+  }catch{}
+
+  // 2) Call ipapi.co (supports CORS)
+  (async ()=>{
+    try{
+      const r = await fetch('https://ipapi.co/json/', { cache: 'no-store', mode: 'cors' });
+      if (!r.ok) return;
+      const j = await r.json();
+      const cc = (j && (j.country_code || j.country)) ? (j.country_code || j.country) : '';
+      if (!cc) return;
+      try{
+        localStorage.setItem(CACHE_KEY, cc);
+        localStorage.setItem(CACHE_AT, String(now));
+      }catch{}
+      show(cc);
+    }catch{
+      // Stay hidden on failure
+    }
   })();
 })();
