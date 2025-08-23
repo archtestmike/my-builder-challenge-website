@@ -42,7 +42,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       const text = chars[(Math.random() * chars.length)|0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-      drops[i] += 0.76; // calmer than before (was 0.84)
+      drops[i] += 0.76; // calmer
     }
     requestAnimationFrame(draw);
   }
@@ -57,7 +57,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
   let w, h, stars = [], shooting = null, last = 0;
   const STAR_COUNT = 220;
-  const SHOOT_MS = 5200 + Math.random() * 3800; // slightly rarer
+  const SHOOT_MS = 5200 + Math.random() * 3800;
 
   function resize(){
     w = canvas.width = window.innerWidth;
@@ -92,7 +92,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
     ctx.save();
     for (const s of stars){
-      s.t += 0.016; // calmer twinkle (was 0.018)
+      s.t += 0.016; // calmer twinkle
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
@@ -147,17 +147,13 @@ document.getElementById('year').textContent = new Date().getFullYear();
     status.style.opacity = '0.9';
 
     try{
-      if (LAMBDA_URL){
-        const res = await fetch(LAMBDA_URL, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(payload),
-          mode: 'cors',
-        });
-        if (!res.ok) throw new Error('Bad response');
-      }else{
-        await new Promise(r => setTimeout(r, 700));
-      }
+      const res = await fetch(LAMBDA_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+        mode: 'cors',
+      });
+      if (!res.ok) throw new Error('Bad response');
       status.textContent = 'Thanks! I’ll get back to you soon.';
       form.reset();
     }catch(err){
