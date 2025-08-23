@@ -91,10 +91,7 @@ body{
   animation:heroPulse 4.8s ease-in-out infinite;
   z-index:-1;
 }
-@keyframes heroPulse{
-  0%,100%{opacity:.55}
-  50%{opacity:.9}
-}
+@keyframes heroPulse{ 0%,100%{opacity:.55} 50%{opacity:.9} }
 
 .profile-photo{
   width:150px; height:150px; border-radius:50%;
@@ -159,7 +156,7 @@ h2{ margin:0 0 18px }
 .inline-link{ color:var(--neon); font-weight:700; text-decoration:none }
 .inline-link:hover{ text-decoration:underline }
 
-/* Gallery grid (middle card) */
+/* Gallery grid */
 .gallery-grid{
   display:grid; grid-template-columns:repeat(2,1fr);
   gap:10px; margin-top:6px;
@@ -248,26 +245,40 @@ footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
 @media (prefers-reduced-motion: reduce){
   #progress-bar{ animation:none }
   .pulse-slow, .glow-card, .status-badge, .geo-chip,
-  .hero-card.hero-glow::before, .profile-photo{ animation:none }
+  .hero-card.hero-glow::before, .profile-photo,
+  #about .about-card::before{ animation:none }
 }
 
-/* ===== About readability + aesthetic (subtle, on-brand) ===== */
+/* ===== About readability + subtle neon polish ===== */
 #about .about-card{
   position:relative;
-  background:rgba(0,0,0,0.55);
+  background:linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.50));
   border:1px solid var(--card-border);
+  border-radius:14px;
   box-shadow:
     0 0 18px rgba(0,255,255,0.12),
-    inset 0 0 18px rgba(0,255,255,0.04);
+    inset 0 0 18px rgba(0,255,255,0.05);
+  backdrop-filter:blur(6px);
 }
+
+/* Animated neon border (very subtle) */
 #about .about-card::before{
   content:""; position:absolute; inset:-6px; border-radius:20px;
-  background:radial-gradient(70% 120% at 50% 0%, rgba(0,255,255,0.14), transparent 70%);
+  background:linear-gradient(135deg, rgba(0,255,255,0.35), rgba(0,136,255,0.25));
   filter:blur(12px); z-index:-1;
-  animation:aboutHalo 5s ease-in-out infinite;
+  animation:aboutGlow 5.4s ease-in-out infinite;
 }
-@keyframes aboutHalo{ 0%,100%{opacity:.45} 50%{opacity:.85} }
+@keyframes aboutGlow{ 0%,100%{opacity:.45} 50%{opacity:.9} }
 
+/* Soft grid texture inside card (matches overall vibe) */
+#about .about-card::after{
+  content:""; position:absolute; inset:8px; border-radius:10px; pointer-events:none;
+  background-image:radial-gradient(rgba(0,255,255,0.08) 1px, transparent 1px);
+  background-size:14px 14px;
+  opacity:.06;
+}
+
+/* Text styling & line length */
 #about .about-card p{
   max-width:68ch;
   margin:0 auto;
@@ -275,6 +286,11 @@ footer{ margin:36px 0 18px; color:#9aa; font-size:.9rem }
   line-height:1.6;
   letter-spacing:.2px;
 }
+/* Gentle first-line emphasis for readability */
+#about .about-card p::first-line{
+  color:#dffcff; font-weight:700; letter-spacing:.3px;
+}
+
 #about h2{ text-wrap:balance; }
 
 @media (max-width:600px){
