@@ -126,40 +126,51 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
-/* ===== Contact form (robust CORS-friendly submit) ===== */
+/* ===== Contact form (Lambda first, graceful email fallbacks) ===== */
 (() => {
-  // Your live Lambda Function URL:
+  // 1) Your Lambda Function URL (kept as-is):
   const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
+
+  // 2) Set this to YOUR email (fallback path uses FormSubmit + mailto):
+  const FALLBACK_EMAIL = "you@example.com"; // <-- CHANGE THIS
+
+  const FORM_SUBMIT_ENDPOINT = `https://formsubmit.co/ajax/${encodeURIComponent(FALLBACK_EMAIL)}`;
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
   const btn = form.querySelector('button[type="submit"]');
+  const setStatus = (msg) => { status.textContent = msg; status.style.opacity = '0.95'; };
 
-  function setStatus(msg){ status.textContent = msg; status.style.opacity = '0.95'; }
-
-  async function postSimple(bodyStr, signal){
-    // Use a "simple request" to avoid preflight (Content-Type text/plain)
+  async function tryLambda(bodyStr, signal){
     return fetch(LAMBDA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
       body: bodyStr,
-      cache: 'no-store',
-      keepalive: true,
+      cache:'no-store',
+      mode:'cors',
       signal
     });
   }
 
-  async function postJSON(bodyStr, signal){
-    // Secondary attempt if simple request fails for any reason
-    return fetch(LAMBDA_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: bodyStr,
-      cache: 'no-store',
+  async function tryFormSubmit(payload, signal){
+    return fetch(FORM_SUBMIT_ENDPOINT, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+      body: JSON.stringify({
+        ...payload,
+        _subject: 'New message from your website',
+        _replyto: payload.email
+      }),
+      cache:'no-store',
       signal
     });
+  }
+
+  function openMailto(payload){
+    const mailto = `mailto:${FALLBACK_EMAIL}?subject=${encodeURIComponent('Website contact from ' + payload.name)}&body=${encodeURIComponent(payload.message + '\n\n— ' + payload.name + ' <' + payload.email + '>')}`;
+    window.location.href = mailto;
   }
 
   form.addEventListener('submit', async (e)=>{
@@ -175,42 +186,44 @@ document.getElementById('year').textContent = new Date().getFullYear();
     setStatus('Sending…');
     if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; }
 
-    // Timeout helper (10s)
+    // 10s timeout for network issues
     const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 10000);
+    const timer = setTimeout(()=>ctrl.abort(), 10000);
 
     try{
-      // Try simple CORS-safe POST first
-      let res = await postSimple(bodyStr, ctrl.signal);
-
-      // If server doesn’t expose CORS headers, fetch may throw;
-      // if it returns but not ok, try JSON variant.
-      if (!res || !res.ok){
-        res = await postJSON(bodyStr, ctrl.signal);
-      }
-
+      // Try Lambda first
+      let res = await tryLambda(bodyStr, ctrl.signal);
       if (res && res.ok){
         setStatus('Thanks! I’ll get back to you soon.');
         form.reset();
       } else {
-        // Last resort: fire-and-forget beacon (no UI change in design)
-        if (navigator.sendBeacon){
-          const blob = new Blob([bodyStr], {type:'text/plain;charset=UTF-8'});
-          navigator.sendBeacon(LAMBDA_URL, blob);
+        // Fallback: FormSubmit emailer
+        const r2 = await tryFormSubmit(payload, ctrl.signal);
+        if (r2 && r2.ok){
+          setStatus('Thanks! Your message was emailed.');
+          form.reset();
+        } else {
+          openMailto(payload);
+          setStatus('Opening your email app so you can send this message…');
         }
-        setStatus('Thanks! Message sent (if you don’t hear back, please try again).');
       }
     } catch(err){
-      // Network/timeout; try beacon fallback
-      if (navigator.sendBeacon){
-        const blob = new Blob([bodyStr], {type:'text/plain;charset=UTF-8'});
-        navigator.sendBeacon(LAMBDA_URL, blob);
-        setStatus('Thanks! Message sent (network was flaky).');
-      } else {
-        setStatus('Hmm, something went wrong. Please try again.');
+      // Network/timeout: try FormSubmit, then mailto
+      try{
+        const r2 = await tryFormSubmit(payload, ctrl.signal);
+        if (r2 && r2.ok){
+          setStatus('Thanks! Your message was emailed.');
+          form.reset();
+        } else {
+          openMailto(payload);
+          setStatus('Opening your email app so you can send this message…');
+        }
+      }catch{
+        openMailto(payload);
+        setStatus('Opening your email app so you can send this message…');
       }
     } finally{
-      clearTimeout(t);
+      clearTimeout(timer);
       if (btn) { btn.disabled = false; btn.style.opacity = ''; }
     }
   });
@@ -253,7 +266,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox ===== */
+/* ===== Mini Gallery Lightbox (stable) ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
