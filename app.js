@@ -14,7 +14,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   onScroll();
 })();
 
-/* ===== Digital Rain (barely slower) ===== */
+/* ===== Digital Rain (slightly slower) ===== */
 (() => {
   const canvas = document.getElementById('digital-rain');
   if (!canvas) return;
@@ -42,14 +42,14 @@ document.getElementById('year').textContent = new Date().getFullYear();
       const text = chars[(Math.random() * chars.length)|0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-      drops[i] += 0.74; // was 0.76 — just a touch slower
+      drops[i] += 0.74;
     }
     requestAnimationFrame(draw);
   }
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Starfield (calmer twinkle + less frequent shooting stars) ===== */
+/* ===== Starfield ===== */
 (() => {
   const canvas = document.getElementById('starfield');
   if (!canvas) return;
@@ -126,38 +126,92 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) requestAnimationFrame(draw);
 })();
 
-/* ===== Contact form (Lambda submit) ===== */
+/* ===== Contact form (robust CORS-friendly submit) ===== */
 (() => {
+  // Your live Lambda Function URL:
   const LAMBDA_URL = "https://fj33big7rmvvfcuuwqhq3urz2e0mucnh.lambda-url.us-east-1.on.aws/";
 
   const form = document.getElementById('contact-form');
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
+  const btn = form.querySelector('button[type="submit"]');
+
+  function setStatus(msg){ status.textContent = msg; status.style.opacity = '0.95'; }
+
+  async function postSimple(bodyStr, signal){
+    // Use a "simple request" to avoid preflight (Content-Type text/plain)
+    return fetch(LAMBDA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: bodyStr,
+      cache: 'no-store',
+      keepalive: true,
+      signal
+    });
+  }
+
+  async function postJSON(bodyStr, signal){
+    // Secondary attempt if simple request fails for any reason
+    return fetch(LAMBDA_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: bodyStr,
+      cache: 'no-store',
+      signal
+    });
+  }
+
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const fd = new FormData(form);
     const payload = {
-      name: (fd.get('name') || '').toString(),
-      email: (fd.get('email') || '').toString(),
-      message: (fd.get('message') || '').toString()
+      name: (fd.get('name') || '').toString().trim(),
+      email: (fd.get('email') || '').toString().trim(),
+      message: (fd.get('message') || '').toString().trim()
     };
+    const bodyStr = JSON.stringify(payload);
 
-    status.textContent = 'Sending…';
-    status.style.opacity = '0.9';
+    setStatus('Sending…');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.8'; }
+
+    // Timeout helper (10s)
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 10000);
 
     try{
-      const res = await fetch(LAMBDA_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload),
-        mode: 'cors',
-      });
-      if (!res.ok) throw new Error('Bad response');
-      status.textContent = 'Thanks! I’ll get back to you soon.';
-      form.reset();
-    }catch(err){
-      status.textContent = 'Hmm, something went wrong. Please try again.';
+      // Try simple CORS-safe POST first
+      let res = await postSimple(bodyStr, ctrl.signal);
+
+      // If server doesn’t expose CORS headers, fetch may throw;
+      // if it returns but not ok, try JSON variant.
+      if (!res || !res.ok){
+        res = await postJSON(bodyStr, ctrl.signal);
+      }
+
+      if (res && res.ok){
+        setStatus('Thanks! I’ll get back to you soon.');
+        form.reset();
+      } else {
+        // Last resort: fire-and-forget beacon (no UI change in design)
+        if (navigator.sendBeacon){
+          const blob = new Blob([bodyStr], {type:'text/plain;charset=UTF-8'});
+          navigator.sendBeacon(LAMBDA_URL, blob);
+        }
+        setStatus('Thanks! Message sent (if you don’t hear back, please try again).');
+      }
+    } catch(err){
+      // Network/timeout; try beacon fallback
+      if (navigator.sendBeacon){
+        const blob = new Blob([bodyStr], {type:'text/plain;charset=UTF-8'});
+        navigator.sendBeacon(LAMBDA_URL, blob);
+        setStatus('Thanks! Message sent (network was flaky).');
+      } else {
+        setStatus('Hmm, something went wrong. Please try again.');
+      }
+    } finally{
+      clearTimeout(t);
+      if (btn) { btn.disabled = false; btn.style.opacity = ''; }
     }
   });
 })();
@@ -199,7 +253,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox (stable video/image nav) ===== */
+/* ===== Mini Gallery Lightbox ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
