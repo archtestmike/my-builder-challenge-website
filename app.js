@@ -14,7 +14,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   onScroll();
 })();
 
-/* ===== Digital Rain (calmer) ===== */
+/* ===== Digital Rain (barely slower) ===== */
 (() => {
   const canvas = document.getElementById('digital-rain');
   if (!canvas) return;
@@ -42,7 +42,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
       const text = chars[(Math.random() * chars.length)|0];
       ctx.fillText(text, i * fontSize, drops[i] * fontSize);
       if (drops[i] * fontSize > h && Math.random() > 0.975) drops[i] = 0;
-      drops[i] += 0.76; // calmer
+      drops[i] += 0.74; // was 0.76 — just a touch slower
     }
     requestAnimationFrame(draw);
   }
@@ -92,7 +92,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
     ctx.save();
     for (const s of stars){
-      s.t += 0.016; // calmer twinkle
+      s.t += 0.016;
       const alpha = s.a + Math.sin(s.t) * 0.22;
       ctx.globalAlpha = Math.max(0.06, Math.min(0.85, alpha));
       ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
