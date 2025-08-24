@@ -38,7 +38,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
 })();
 
-/* ===== Starfield ===== */
+/* ===== Starfield (with shooting stars) ===== */
 (() => {
   const canvas = document.getElementById('starfield'); if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -85,11 +85,10 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const status = document.getElementById('form-status');
   if (!form || !status) return;
 
-  const LAMBDA_URL = (form.dataset.lambda || '').trim(); // exact Function URL
+  const LAMBDA_URL = (form.dataset.lambda || '').trim();
   const btn = form.querySelector('button[type="submit"]');
   const say = (m) => { status.textContent = m; status.style.opacity = '0.95'; };
 
-  // POST with text/plain to avoid preflight; Lambda reads JSON from event.body
   const postPlain = (url, bodyStr, signal) => fetch(url, {
     method : 'POST',
     headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
@@ -99,7 +98,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
     signal
   });
 
-  // Fallback with application/json
   const postJSON = (url, obj, signal) => fetch(url, {
     method : 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -126,21 +124,25 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if (btn){ btn.disabled = true; btn.style.opacity = '0.8'; }
 
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 15000); // 15s safety
+    const timer = setTimeout(() => ctrl.abort(), 15000);
 
     try {
       let ok = false;
-      // Try text/plain (simple request, no preflight)
       try {
         const r1 = await postPlain(LAMBDA_URL, bodyStr, ctrl.signal);
         ok = r1 && r1.ok;
-      } catch {}
-      // Fallback: application/json
+        if (!ok) console.warn('Lambda returned non-OK to text/plain:', r1 && r1.status);
+      } catch (err) {
+        console.warn('text/plain fetch failed:', err);
+      }
       if (!ok) {
         try {
           const r2 = await postJSON(LAMBDA_URL, payload, ctrl.signal);
           ok = r2 && r2.ok;
-        } catch {}
+          if (!ok) console.warn('Lambda returned non-OK to JSON:', r2 && r2.status);
+        } catch (err) {
+          console.warn('JSON fetch failed:', err);
+        }
       }
 
       if (ok){
@@ -185,7 +187,7 @@ document.getElementById('year').textContent = new Date().getFullYear();
   })();
 })();
 
-/* ===== Mini Gallery Lightbox ===== */
+/* ===== Lightbox ===== */
 (() => {
   const root = document.getElementById('build-gallery');
   const lb   = document.getElementById('lightbox');
