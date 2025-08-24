@@ -8,20 +8,23 @@
   --field-bd:rgba(0,255,255,0.2);
   --field-glow:0 0 16px rgba(0,255,255,0.25);
 }
-*{box-sizing:border-box} html,body{height:100%}
+*{box-sizing:border-box}
+html,body{height:100%}
 body{margin:0;color:var(--fg);background:var(--bg);
   font-family:"Courier New",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   text-align:center;overflow-x:hidden}
 
+/* Progress */
 #progress-bar{position:fixed;top:0;left:0;height:4px;width:0%;
   background:linear-gradient(90deg,var(--neon),var(--neon-2));
-  box-shadow:0 0 12px var(--neon);z-index:1000;
-  animation:barGlow 2s ease-in-out infinite alternate}
+  box-shadow:0 0 12px var(--neon);z-index:1000;animation:barGlow 2s ease-in-out infinite alternate}
 @keyframes barGlow{from{box-shadow:0 0 8px var(--neon)}to{box-shadow:0 0 18px var(--neon)}}
 
+/* Background */
 #starfield,#digital-rain{position:fixed;inset:0;width:100%;height:100%}
 #starfield{z-index:-2} #digital-rain{z-index:-1;opacity:.22}
 
+/* Badges */
 .status-badge{position:fixed;top:16px;right:16px;padding:8px 16px;border:1px solid var(--card-border);
   border-radius:12px;background:rgba(0,0,0,0.6);color:var(--neon);
   box-shadow:0 0 14px var(--card-shadow);font-size:.9rem;backdrop-filter:blur(6px);
@@ -31,6 +34,7 @@ body{margin:0;color:var(--fg);background:var(--bg);
   border:1px solid var(--card-border);border-radius:10px;backdrop-filter:blur(6px);
   animation:pulse 3.6s ease-in-out infinite;z-index:880}
 
+/* Hero */
 .hero-card{position:relative;max-width:680px;margin:6rem auto 3rem;padding:2rem 2.2rem;
   background:rgba(0,0,0,0.55);border-radius:18px;border:1px solid var(--card-border);
   box-shadow:0 0 26px var(--card-shadow);backdrop-filter:blur(6px);animation:fadeIn 1s ease}
@@ -52,11 +56,13 @@ body{margin:0;color:var(--fg);background:var(--bg);
 h1{margin:.25rem 0 0;font-size:2.2rem;letter-spacing:.5px}
 .tagline{color:#9ed3ff;margin:.6rem 0 1.2rem}
 
+/* Buttons */
 .btn{display:inline-block;padding:.75rem 1.35rem;border-radius:10px;text-decoration:none;color:#000;font-weight:700;
   background:linear-gradient(135deg,var(--neon),var(--neon-2));box-shadow:0 0 14px var(--card-shadow);
   transition:transform .2s ease,box-shadow .2s ease,opacity .2s ease}
 .btn:hover{transform:translateY(-1px);box-shadow:0 0 18px var(--neon)} .btn-block{width:100%}
 
+/* Layout */
 main{max-width:1080px;margin:0 auto;padding:0 20px 64px}
 section{margin:56px 0} h2{margin:0 0 18px}
 
@@ -67,24 +73,41 @@ section{margin:56px 0} h2{margin:0 0 18px}
   transition:transform .2s ease,box-shadow .2s ease,background .2s ease;text-align:left}
 .card:hover{transform:translateY(-6px);background:rgba(0,255,255,0.06);box-shadow:0 8px 28px rgba(0,255,255,0.25)}
 
+/* Soft glow */
 .glow-soft{animation:softPulse 6s ease-in-out infinite;will-change:box-shadow;
   box-shadow:0 6px 24px rgba(0,0,0,0.45),0 0 14px rgba(0,255,255,0.10)}
 @keyframes softPulse{
   0%,100%{box-shadow:0 6px 24px rgba(0,0,0,0.45),0 0 14px rgba(0,255,255,0.10)}
-  50%{box-shadow:0 8px 28px rgba(0,0,0,0.45),0 0 22px rgba(0,255,255,0.22)}
+  50%{box-shadow:0 8px 28px rgba(0,0,0,0.45),0 0 24px rgba(0,255,255,0.24)}
 }
 .card-wide{max-width:980px;margin:0 auto;text-align:center}
 .pulse-slow{animation:pulse 3.8s ease-in-out infinite}
 @keyframes pulse{0%{box-shadow:0 0 10px rgba(0,255,255,0.25)}50%{box-shadow:0 0 22px rgba(0,255,255,0.9)}100%{box-shadow:0 0 10px rgba(0,255,255,0.25)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* ✅ Force Fun Facts cards to glow even if classes differ or id changes */
-section[id*="facts"] .cards .card{
+/* ✅ Force Fun Facts to glow/pulse and add a subtle halo to match hero */
+#fun-facts .card,
+#facts .card,
+section[id*="facts"] .card{
   animation:softPulse 6s ease-in-out infinite !important;
-  box-shadow:0 6px 24px rgba(0,0,0,0.45),0 0 14px rgba(0,255,255,0.12) !important;
+  position:relative;
+}
+#fun-facts .card::before,
+#facts .card::before,
+section[id*="facts"] .card::before{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius:inherit;
+  background:
+    radial-gradient(60% 60% at 50% 10%, rgba(0,255,255,0.12), transparent 60%),
+    radial-gradient(70% 70% at 50% 100%, rgba(0,136,255,0.12), transparent 70%);
+  filter:blur(12px);
+  z-index:-1;
+  animation:softPulse 6s ease-in-out infinite;
 }
 
-/* Gallery / Lightbox / Social (unchanged) */
+/* Gallery / Lightbox / Social */
 .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
 .gallery-item{aspect-ratio:16/10;width:100%;border-radius:12px;border:1px solid var(--card-border);
   box-shadow:0 6px 24px rgba(0,0,0,.45);background:#0b1a26 var(--bg) no-repeat center/cover;
@@ -96,19 +119,11 @@ section[id*="facts"] .cards .card{
 .gallery-item.hidden{display:none}
 .gallery-note{margin:.5rem 0 0;color:#9ed3ff;font-size:.9rem}
 
-.lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:1100}
-.lightbox.open{display:flex}
-.lb-stage{max-width:min(92vw,1000px);max-height:78vh;border:1px solid var(--card-border);border-radius:14px;background:rgba(0,0,0,.6);box-shadow:0 0 24px var(--card-shadow);overflow:hidden}
-.lb-stage img,.lb-stage video{display:block;max-width:100%;max-height:78vh;width:auto;height:auto;object-fit:contain}
-.lb-close{position:absolute;top:18px;right:22px;font-size:28px;line-height:28px;color:#fff;background:transparent;border:0;cursor:pointer;text-shadow:0 0 8px #000}
-.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--card-border);background:rgba(0,0,0,.35);color:#dffcff;box-shadow:0 0 12px rgba(0,255,255,.25);cursor:pointer}
-.lb-prev{left:16px}.lb-next{right:16px}
-
 .glow-card{animation:pulse 3.2s ease-in-out infinite}
 .social-link{color:var(--neon);font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.55rem}
 .social-icon{color:#dffcff;display:inline-flex}
 
-/* Contact form (unchanged) */
+/* Contact form */
 .contact-form{display:flex;flex-direction:column;gap:14px;margin-top:6px}
 .contact-form input,.contact-form textarea{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--field-bd);
   background:var(--field-bg);color:var(--fg);font-family:inherit;box-shadow:inset 0 0 12px rgba(0,255,255,0.08);
@@ -125,9 +140,11 @@ footer p{margin:0;letter-spacing:.15px}
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   #progress-bar{animation:none}
-  .pulse-slow,.glow-card,.geo-chip,.status-badge,.hero-card.hero-glow::before,.profile-photo,.glow-soft{animation:none}
+  .pulse-slow,.glow-card,.geo-chip,.status-badge,.hero-card.hero-glow::before,.profile-photo{animation:none}
+  /* keep Fun Facts faintly glowing even with reduced motion */
+  #fun-facts .card, #facts .card, section[id*="facts"] .card{animation:none; box-shadow:0 6px 24px rgba(0,255,255,0.18)}
 }
 
-/* About paragraph stays bold throughout (not just first line) */
+/* Make entire About paragraph bold (not only first line) */
 #about .about-card p{font-weight:700;line-height:1.65}
 #about .about-card p::first-line{color:#dffcff;letter-spacing:.3px}
