@@ -89,6 +89,26 @@ section{margin:56px 0} h2{margin:0 0 18px}
 @keyframes pulse{0%{box-shadow:0 0 10px rgba(0,255,255,0.25)}50%{box-shadow:0 0 22px rgba(0,255,255,0.9)}100%{box-shadow:0 0 10px rgba(0,255,255,0.25)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+/* ===== Make Fun Facts cards pulse/glow like the rest (scoped) ===== */
+#facts .card{
+  position:relative;
+  animation:softPulse 6s ease-in-out infinite;
+  box-shadow:0 6px 24px rgba(0,0,0,0.45), 0 0 16px rgba(0,255,255,0.12);
+  will-change: box-shadow;
+}
+#facts .card::after{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius:16px;
+  background:
+    radial-gradient(60% 60% at 50% 0%, rgba(0,255,255,0.12), transparent 60%),
+    radial-gradient(70% 60% at 50% 100%, rgba(0,136,255,0.10), transparent 70%);
+  filter:blur(14px);
+  z-index:-1;
+  pointer-events:none;
+}
+
 /* Gallery / Lightbox / Social */
 .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
 .gallery-item{aspect-ratio:16/10;width:100%;border-radius:12px;border:1px solid var(--card-border);
@@ -131,7 +151,7 @@ footer p{margin:0;letter-spacing:.15px}
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce){
   #progress-bar{animation:none}
-  .pulse-slow,.glow-card,.geo-chip,.status-badge,.hero-card.hero-glow::before,.profile-photo,#about .about-card::before,.glow-soft{animation:none}
+  .pulse-slow,.glow-card,.geo-chip,.status-badge,.hero-card.hero-glow::before,.profile-photo,#about .about-card::before,.glow-soft,#facts .card{animation:none}
 }
 
 /* ===== About styling ===== */
@@ -141,12 +161,11 @@ footer p{margin:0;letter-spacing:.15px}
   background:radial-gradient(60% 60% at 50% 0%,rgba(0,255,255,0.16),transparent 60%),
              radial-gradient(70% 60% at 50% 100%,rgba(0,136,255,0.14),transparent 70%);
   filter:blur(14px);animation:heroPulse 6.2s ease-in-out infinite}
-/* ⬇️ CHANGED: apply the first-line styling to the WHOLE paragraph */
+/* full-paragraph styling to match first line */
 #about .about-card p{
   max-width:78ch;margin:0 auto;text-align:left;line-height:1.6;
   color:#dffcff;font-weight:700;letter-spacing:.3px;
 }
-/* keep ::first-line consistent (no visual change now, just future-proof) */
 #about .about-card p::first-line{color:#dffcff;font-weight:700;letter-spacing:.3px}
 #about h2{text-wrap:balance}
 @media (max-width:600px){
