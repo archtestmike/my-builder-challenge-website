@@ -10,8 +10,8 @@
   <!-- Perf hints -->
   <link rel="preload" as="image" href="profile-phote.jpg">
   <link rel="preconnect" href="https://ipapi.co">
-  <!-- PRECONNECT to the CONTACT Lambda (EXACT URL from console) -->
-  <link rel="preconnect" href="https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/">
+  <!-- PRECONNECT to the CONTACT Lambda (exact URL from the console) -->
+  <link rel="preconnect" href="https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws">
 </head>
 <body>
   <!-- Scroll progress -->
@@ -52,17 +52,19 @@
     <section id="facts">
       <h2>Fun Facts About Me</h2>
       <div class="cards">
+        <!-- ADDED glow-soft here -->
         <div class="card glow-soft">
           <a class="fact-link" href="https://builder.aws.com/content/31C2WxIDSQive7q2Dv5xNFCmYJj/aws-builder-challenge-2-build-a-website-on-the-cloud" target="_blank" rel="noopener">
-            <div class="fact-title"> ⭐ Challenge In Progress</div>
+            <div class="fact-title">⭐ Challenge In Progress</div>
             <div class="fact-body">
               Currently working on <span class="underline">AWS Builder Challenge #2</span> — Build a website on the cloud!
             </div>
           </a>
         </div>
 
+        <!-- ADDED glow-soft here -->
         <div class="card glow-soft">
-          <div class="fact-title">🛠️ DIY Art Gallery (LED + Airbrush)</div>
+          <div class="fact-title">🛠️ DIY Gallery (LED + Airbrush)</div>
           <div id="build-gallery" class="gallery-grid">
             <button class="gallery-item" data-type="img"   data-src="media/image1.jpeg" style="--bg:url('media/image1.jpeg')" aria-label="Gallery image 1"></button>
             <button class="gallery-item video" data-type="video" data-src="media/vid1.mp4" data-poster="media/image2.jpeg" style="--bg:url('media/image2.jpeg')" aria-label="Gallery video 1"></button>
@@ -77,8 +79,9 @@
           <p class="gallery-note">Click a tile to expand. Videos play in the lightbox.</p>
         </div>
 
+        <!-- ADDED glow-soft here -->
         <div class="card glow-soft">
-          <div class="fact-title">🏗️ AWS Builder Series</div>
+          <div class="fact-title">💡 Fun Project</div>
           <div class="fact-body">
             This site is hosted on AWS and wired with a serverless contact form.
             <br/><br/>
@@ -121,7 +124,6 @@
     <section id="contact">
       <h2>Contact</h2>
       <div class="card card-wide pulse-slow">
-        <!-- EXACT contact Lambda URL -->
         <form id="contact-form" class="contact-form" novalidate
               data-lambda="https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/">
           <input type="text" name="name" placeholder="Your Name" required/>
