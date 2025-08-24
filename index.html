@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Michael Ramirez - AWS Cloud Builder</title>
 
-  <!-- Bump the version to bust cache -->
-  <link rel="stylesheet" href="styles.css?v=30"/>
+  <!-- Cache-bust -->
+  <link rel="stylesheet" href="styles.css?v=31"/>
 
   <!-- Perf hints -->
   <link rel="preload" as="image" href="profile-phote.jpg">
@@ -40,13 +40,11 @@
       </div>
     </section>
 
-    <!-- Fun Facts -->
-    <!-- NOTE: section id contains the word "facts" to match the CSS fallback -->
+    <!-- Fun facts -->
     <section id="fun-facts">
       <h2>Fun Facts About Me</h2>
       <div class="cards">
-        <!-- Add glow-soft to each card -->
-        <div class="card glow-soft">
+        <div class="card glow-soft facts-card">
           <a class="fact-link" href="https://builder.aws.com/content/31C2WxIDSQive7q2Dv5xNFCmYJj/aws-builder-challenge-2-build-a-website-on-the-cloud" target="_blank" rel="noopener">
             <div class="fact-title">⭐ Challenge In Progress</div>
             <div class="fact-body">
@@ -55,7 +53,7 @@
           </a>
         </div>
 
-        <div class="card glow-soft">
+        <div class="card glow-soft facts-card">
           <div class="fact-title">🛠️ DIY Art Gallery (LED + Airbrush)</div>
           <div id="build-gallery" class="gallery-grid">
             <button class="gallery-item" data-type="img"   data-src="media/image1.jpeg" style="--bg:url('media/image1.jpeg')" aria-label="Gallery image 1"></button>
@@ -70,7 +68,7 @@
           <p class="gallery-note">Click a tile to expand. Videos play in the lightbox.</p>
         </div>
 
-        <div class="card glow-soft">
+        <div class="card glow-soft facts-card">
           <div class="fact-title">💡 AWS Builder Series</div>
           <div class="fact-body">
             This site is hosted on AWS and wired with a serverless contact form.
@@ -83,16 +81,14 @@
       </div>
     </section>
 
-    <!-- Find Me -->
+    <!-- Social -->
     <section id="social">
       <h2>Find Me Online</h2>
       <div class="cards">
         <div class="card glow-card">
           <a class="social-link" href="https://www.linkedin.com/in/ramirezmichael1/" target="_blank" rel="noopener">
             <span class="social-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                <path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.5 8h4v16h-4zM8 8h3.8v2.2h.1c.5-.9 1.8-2.2 3.8-2.2 4.1 0 4.9 2.7 4.9 6.1V24h-4v-7.1c0-1.7 0-3.8-2.3-3.8s-2.6 1.8-2.6 3.7V24H8z"/>
-              </svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.5 8h4v16h-4zM8 8h3.8v2.2h.1c.5-.9 1.8-2.2 3.8-2.2 4.1 0 4.9 2.7 4.9 6.1V24h-4v-7.1c0-1.7 0-3.8-2.3-3.8s-2.6 1.8-2.6 3.7V24H8z"/></svg>
             </span>
             LinkedIn
           </a>
@@ -100,9 +96,7 @@
         <div class="card glow-card">
           <a class="social-link" href="https://github.com/archtestmike" target="_blank" rel="noopener">
             <span class="social-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.2.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 .1.7 1.7 2.9 1.2.1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.4-5.5-6.2 0-1.4.5-2.6 1.2-3.5-.1-.3-.5-1.7.1-3.5 0 0 1-.3 3.6 1.2a12.4 12.4 0 0 1 6.6 0c2.5-1.5 3.5-1.2 3.5-1.2.7 1.8.3 3.2.1 3.5.8.9 1.2 2.1 1.2 3.5 0 4.8-2.9 5.8-5.6 6.1.4.3.8 1 .8 2.1v3.1c0 .4.2.7.8.6A12 12 0 0 0 12 .5z"/>
-              </svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.2.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 .1.7 1.7 2.9 1.2.1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.4-5.5-6.2 0-1.4.5-2.6 1.2-3.5-.1-.3-.5-1.7.1-3.5 0 0 1-.3 3.6 1.2a12.4 12.4 0 0 1 6.6 0c2.5-1.5 3.5-1.2 3.5-1.2.7 1.8.3 3.2.1 3.5.8.9 1.2 2.1 1.2 3.5 0 4.8-2.9 5.8-5.6 6.1.4.3.8 1 .8 2.1v3.1c0 .4.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>
             </span>
             GitHub
           </a>
