@@ -1,7 +1,7 @@
 # AWS Builder Challenge #2: Build a website on the Cloud 
 
 A sleek, neon‑glow personal site built for the **AWS Builder Challenge** — hosted on **AWS Amplify**, animated with a starfield + digital rain background, and wired to a **serverless contact form** via **AWS Lambda + SNS**.  
-**Built with ❤️‍🔥 on AWS.**
+
 
 ## ✨ Features
 - **Hero card** with photo pulse/glow and subtle halo.
