@@ -1,136 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Michael Ramirez - AWS Cloud Builder</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Digital Rain — Demo (lightbox fix)</title>
 
-  <!-- Cache-bust -->
-  <link rel="stylesheet" href="styles.css?v=31"/>
+  <!-- Lightbox CSS MUST load before your CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplelightbox@2.14.1/dist/simple-lightbox.min.css">
 
-  <!-- Perf hints -->
-  <link rel="preload" as="image" href="profile-phote.jpg">
-  <link rel="preconnect" href="https://ipapi.co">
-  <link rel="preconnect" href="https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws">
+  <!-- Your site styles -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="progress-bar"></div>
 
-  <canvas id="starfield" aria-hidden="true"></canvas>
-  <canvas id="digital-rain" aria-hidden="true"></canvas>
-
-  <div class="status-badge"><span>🚀</span> Deployed on <strong>AWS Amplify</strong> + <strong>Lambda</strong></div>
-  <div id="geo-hello" class="geo-chip" hidden>Hello from 🌎</div>
-
-  <header class="hero-card hero-glow">
-    <img src="profile-phote.jpg" alt="Mike profile photo" class="profile-photo" width="150" height="150" fetchpriority="high"/>
-    <h1>Michael Ramirez</h1>
-    <p class="tagline">Aspiring Cloud Architect from the Big Apple 🗽🍎</p>
-    <a class="btn" href="https://builder.aws/community/@mikear815" target="_blank" rel="noopener">Builder Profile ↗</a>
-  </header>
-
+  <!-- ====== CONTENT (sample) ====== -->
   <main>
-    <!-- About -->
-    <section id="about">
-      <h2>About Me</h2>
-      <div class="card card-wide about-card glow-soft">
-        <p>
-          Hi 👋 my name is Mike. I believe life is most meaningful when we make a difference. I enjoy volunteering in my community, pitching in at events, and showing up when people need support. I share my hobbies and art to spark creativity and connection, and I’m a proud retro SNES gamer 🎮. Professionally I focus on AWS ☁️, using cloud technology to help individuals, organizations, and communities do more. I bring connection, contribution, and curiosity to every project, team, and community I’m part of.
-        </p>
+    <section class="media-section">
+      <h2 class="section-title">DIY Art Gallery</h2>
+
+      <!-- Use your real image links here; selector is .media-grid a -->
+      <div class="media-grid">
+        <a href="images/pic-1.jpg"><img src="images/thumb-1.jpg" alt="Work 1"></a>
+        <a href="images/pic-2.jpg"><img src="images/thumb-2.jpg" alt="Work 2"></a>
+        <a href="images/pic-3.jpg"><img src="images/thumb-3.jpg" alt="Work 3"></a>
+        <a href="images/pic-4.jpg"><img src="images/thumb-4.jpg" alt="Work 4"></a>
       </div>
     </section>
 
-    <!-- Fun facts -->
-    <section id="fun-facts">
-      <h2>Fun Facts About Me</h2>
-      <div class="cards">
-        <div class="card glow-soft facts-card">
-          <a class="fact-link" href="https://builder.aws.com/content/31C2WxIDSQive7q2Dv5xNFCmYJj/aws-builder-challenge-2-build-a-website-on-the-cloud" target="_blank" rel="noopener">
-            <div class="fact-title">⭐ Challenge In Progress</div>
-            <div class="fact-body">
-              Currently working on <span class="underline">AWS Builder Challenge #2</span> — Build a website on the cloud!
-            </div>
-          </a>
-        </div>
-
-        <div class="card glow-soft facts-card">
-          <div class="fact-title">🛠️ DIY Art Gallery (LED + Airbrush)</div>
-          <div id="build-gallery" class="gallery-grid">
-            <button class="gallery-item" data-type="img"   data-src="media/image1.jpeg" style="--bg:url('media/image1.jpeg')" aria-label="Gallery image 1"></button>
-            <button class="gallery-item video" data-type="video" data-src="media/vid1.mp4" data-poster="media/image2.jpeg" style="--bg:url('media/image2.jpeg')" aria-label="Gallery video 1"></button>
-            <button class="gallery-item" data-type="img"   data-src="media/image3.jpeg" style="--bg:url('media/image3.jpeg')" aria-label="Gallery image 2"></button>
-            <button class="gallery-item video" data-type="video" data-src="media/vid2.mp4" data-poster="media/image4.jpeg" style="--bg:url('media/image4.jpeg')" aria-label="Gallery video 2"></button>
-
-            <button class="gallery-item hidden" data-type="img"   data-src="media/image4.jpeg"></button>
-            <button class="gallery-item hidden" data-type="img"   data-src="media/image5.jpeg"></button>
-            <button class="gallery-item hidden" data-type="video" data-src="media/vid3.mp4" data-poster="media/image5.jpeg"></button>
-          </div>
-          <p class="gallery-note">Click a tile to expand. Videos play in the lightbox.</p>
-        </div>
-
-        <div class="card glow-soft facts-card">
-          <div class="fact-title">💡 AWS Builder Series</div>
-          <div class="fact-body">
-            This site is hosted on AWS and wired with a serverless contact form.
-            <br/><br/>
-            <a class="inline-link" href="https://github.com/archtestmike/qommander" target="_blank" rel="noopener">
-              AWS Builder Challenge #1 ↗
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Social -->
-    <section id="social">
-      <h2>Find Me Online</h2>
-      <div class="cards">
-        <div class="card glow-card">
-          <a class="social-link" href="https://www.linkedin.com/in/ramirezmichael1/" target="_blank" rel="noopener">
-            <span class="social-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.5 8h4v16h-4zM8 8h3.8v2.2h.1c.5-.9 1.8-2.2 3.8-2.2 4.1 0 4.9 2.7 4.9 6.1V24h-4v-7.1c0-1.7 0-3.8-2.3-3.8s-2.6 1.8-2.6 3.7V24H8z"/></svg>
-            </span>
-            LinkedIn
-          </a>
-        </div>
-        <div class="card glow-card">
-          <a class="social-link" href="https://github.com/archtestmike" target="_blank" rel="noopener">
-            <span class="social-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.2.8-.6v-2.2c-3.3.7-4-1.6-4-1.6-.5-1.3-1.2-1.7-1.2-1.7-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 .1.7 1.7 2.9 1.2.1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.4-5.5-6.2 0-1.4.5-2.6 1.2-3.5-.1-.3-.5-1.7.1-3.5 0 0 1-.3 3.6 1.2a12.4 12.4 0 0 1 6.6 0c2.5-1.5 3.5-1.2 3.5-1.2.7 1.8.3 3.2.1 3.5.8.9 1.2 2.1 1.2 3.5 0 4.8-2.9 5.8-5.6 6.1.4.3.8 1 .8 2.1v3.1c0 .4.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>
-            </span>
-            GitHub
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact -->
-    <section id="contact">
-      <h2>Contact</h2>
-      <div class="card card-wide pulse-slow">
-        <form id="contact-form" class="contact-form" novalidate
-              data-lambda="https://uxgn2qacigic7pqq3mwvhg2duq0nkoir.lambda-url.us-east-1.on.aws/">
-          <input type="text" name="name" placeholder="Your Name" required/>
-          <input type="email" name="email" placeholder="Your Email" required/>
-          <textarea name="message" placeholder="Your Message" required></textarea>
-          <button type="submit" class="btn btn-block">Send</button>
-        </form>
-        <p id="form-status" class="form-status" aria-live="polite"></p>
-      </div>
+    <section class="contact-card">
+      <h2 class="section-title">Contact</h2>
+      <form id="contact">
+        <input name="name"   placeholder="Your Name">
+        <input name="email"  placeholder="Your Email">
+        <textarea name="msg" placeholder="Your Message"></textarea>
+        <button type="submit" class="btn-send">Send</button>
+      </form>
     </section>
   </main>
 
-  <footer>
-    <p>© <span id="year"></span> Michael Ramirez — Built with ❤️‍🔥 on AWS</p>
+  <footer class="site-footer">
+    © 2025 Michael Ramirez — Built with ❤️ on AWS
   </footer>
 
-  <div id="lightbox" class="lightbox" aria-hidden="true">
-    <button class="lb-close" aria-label="Close">×</button>
-    <button class="lb-nav lb-prev" aria-label="Previous">‹</button>
-    <figure class="lb-stage"></figure>
-    <button class="lb-nav lb-next" aria-label="Next">›</button>
-  </div>
+  <!-- Lightbox JS (at the very end) -->
+  <script src="https://cdn.jsdelivr.net/npm/simplelightbox@2.14.1/dist/simple-lightbox.min.js"></script>
 
-  <script src="app.js?v=28" defer></script>
+  <!-- Your code -->
+  <script src="script.js"></script>
 </body>
 </html>
